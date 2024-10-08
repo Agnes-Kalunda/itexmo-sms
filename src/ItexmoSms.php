@@ -1,6 +1,5 @@
 <?php 
 
-
 namespace Agnes\ItexmoSms;
 
 use GuzzleHttp\Client;
@@ -36,7 +35,7 @@ class ItexmoSms{
         return $this->sendRequest('broadcast', $payload);
     }
 
-    // funto handle broadcast-2d endpoint
+    // fun to handle broadcast-2d endpoint
 
     public function broadcast2d(array $messages, ?string $senderId = null){
         $payload = [
