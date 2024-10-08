@@ -50,6 +50,19 @@ class ItexmoSms{
 
 
     }
+
+
+    public function broadcastOtp(string $recipient, string $message){
+        $payload = [
+            'Email' => $this->config['email'],
+            'password' => $this->config['password'],
+            'ApiCode' => $this->config['api_code'],
+            'Recipients' => json_encode([$recipient]),
+            'Message' => $message,
+        ];
+
+        return $this->sendRequest('boradcast-otp', $payload);
+    }
     
 
 }
