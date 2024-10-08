@@ -1,4 +1,8 @@
 <?php 
+
+
+namespace Agnes\ItexmoSms;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
