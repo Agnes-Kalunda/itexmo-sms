@@ -6,15 +6,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
 
-
-
-class ItexmoSmsTest extends TestCase
-{
+class ItexmoSmsTest extends TestCase {
     protected $itexmoSms;
     protected $mockClient;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         // Mock the GuzzleHttp client
         $this->mockClient = Mockery::mock(Client::class);
 
@@ -26,13 +22,10 @@ class ItexmoSmsTest extends TestCase
         ];
 
         // Create an instance of ItexmoSms with mocked client
-        $this->itexmoSms = new ItexmoSms($config);
-        $this->itexmoSms->client = $this->mockClient;
+        $this->itexmoSms = new ItexmoSms($config, $this->mockClient);
     }
 
-    public function testBroadcast()
-    {
-    
+    public function testBroadcast() {
         $this->mockClient
             ->shouldReceive('post')
             ->once()
@@ -41,16 +34,13 @@ class ItexmoSmsTest extends TestCase
             }))
             ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
 
-    
         $response = $this->itexmoSms->broadcast(['12345678909'], 'Test message');
 
         // Assert response
         $this->assertEquals(['status' => 'OK'], $response);
     }
 
-    public function testBroadcast2d()
-    {
-        
+    public function testBroadcast2d() {
         $this->mockClient
             ->shouldReceive('post')
             ->once()
@@ -59,7 +49,6 @@ class ItexmoSmsTest extends TestCase
             }))
             ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
 
-        
         $messages = [
             ['Recipient' => '12345678909', 'Message' => 'Message 1'],
             ['Recipient' => '98765432109', 'Message' => 'Message 2'],
@@ -67,13 +56,10 @@ class ItexmoSmsTest extends TestCase
 
         $response = $this->itexmoSms->broadcast2d($messages);
 
-    
         $this->assertEquals(['status' => 'OK'], $response);
     }
 
-    public function testBroadcastOtp()
-    {
-        // Mock response from HTTP client
+    public function testBroadcastOtp() {
         $this->mockClient
             ->shouldReceive('post')
             ->once()
@@ -82,16 +68,12 @@ class ItexmoSmsTest extends TestCase
             }))
             ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
 
-        
         $response = $this->itexmoSms->broadcastOtp('12345678909', 'Your OTP is 123456');
 
-    
         $this->assertEquals(['status' => 'OK'], $response);
     }
 
-    public function testQuery()
-    {
-        // Mock response from HTTP client
+    public function testQuery() {
         $this->mockClient
             ->shouldReceive('post')
             ->once()
@@ -100,16 +82,13 @@ class ItexmoSmsTest extends TestCase
             }))
             ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
 
-        
         $response = $this->itexmoSms->query(['ApiCode' => 'api_key']);
 
         // Assert response
         $this->assertEquals(['status' => 'OK'], $response);
     }
 
-    protected function tearDown(): void
-    {
+    protected function tearDown(): void {
         Mockery::close();
     }
 }
-
