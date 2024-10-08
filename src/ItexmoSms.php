@@ -5,142 +5,59 @@ namespace Agnes\ItexmoSms;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\ClientException;
 
 class ItexmoSms
 {
     protected $client;
-    protected $config;
+    protected $apiCode;
 
     public function __construct(array $config)
     {
-        $this->config = $config;
-        $this->client = new Client([
-            'base_uri' => 'https://itexmo.com/', // base URI
-            'timeout'  => 5.0,  
-        ]);
+        $this->apiCode = $config['api_code'];
+        $this->client = new Client(['base_uri' => 'https://api.itexmo.com/']);
     }
 
- 
+    // Setter method for client to allow injection during testing
+    public function setClient(Client $client)
+    {
+        $this->client = $client;
+    }
+
     public function broadcast(array $recipients, string $message)
     {
         try {
-            $response = $this->client->post('broadcast', [
-                'form_params' => [
-                    'Recipients' => $recipients,
-                    'Message'    => $message,
-                    'ApiCode'    => $this->config['api_code'],
-                ],
+            $response = $this->client->post('/api/send', [
+                'json' => [
+                    'to' => $recipients,
+                    'message' => $message,
+                    'api_code' => $this->apiCode
+                ]
             ]);
 
-            return $this->handleResponse($response);
-        } catch (RequestException $e) {
-            return $this->handleRequestError($e);
-        } catch (ConnectException $e) {
-            return ['error' => 'Network error: Unable to connect to the API.'];
-        } catch (\Exception $e) {
-            return ['error' => 'An unexpected error occurred: ' . $e->getMessage()];
-        }
-    }
-
-   
-    public function broadcast2d(array $messages)
-    {
-        try {
-            $response = $this->client->post('broadcast-2d', [
-                'form_params' => [
-                    'Messages' => $messages,
-                    'ApiCode'  => $this->config['api_code'],
-                ],
-            ]);
-
-            return $this->handleResponse($response);
-        } catch (RequestException $e) {
-            return $this->handleRequestError($e);
-        } catch (ConnectException $e) {
-            return ['error' => 'Network error: Unable to connect to the API.'];
-        } catch (\Exception $e) {
-            return ['error' => 'An unexpected error occurred: ' . $e->getMessage()];
-        }
-    }
-
-    
-    public function broadcastOtp(string $recipient, string $message)
-    {
-        try {
-            $response = $this->client->post('broadcast-otp', [
-                'form_params' => [
-                    'Recipient' => $recipient,
-                    'Message'   => $message,
-                    'ApiCode'   => $this->config['api_code'],
-                ],
-            ]);
-
-            return $this->handleResponse($response);
-        } catch (RequestException $e) {
-            return $this->handleRequestError($e);
-        } catch (ConnectException $e) {
-            return ['error' => 'Network error: Unable to connect to the API.'];
-        } catch (\Exception $e) {
-            return ['error' => 'An unexpected error occurred: ' . $e->getMessage()];
-        }
-    }
-
-    
-    //  Query the API
-    
-    public function query(array $params)
-    {
-        try {
-            $response = $this->client->post('query', [
-                'form_params' => $params,
-            ]);
-
-            return $this->handleResponse($response);
-        } catch (RequestException $e) {
-            return $this->handleRequestError($e);
-        } catch (ConnectException $e) {
-            return ['error' => 'Network error: Unable to connect to the API.'];
-        } catch (\Exception $e) {
-            return ['error' => 'An unexpected error occurred: ' . $e->getMessage()];
-        }
-    }
-
-    
-    // handle API response
-    
-    private function handleResponse($response)
-    {
-        $statusCode = $response->getStatusCode();
-
-        if ($statusCode == 200) {
-            return json_decode($response->getBody(), true);
-        }
-
-        return [
-            'error' => 'Unexpected status code: ' . $statusCode
-        ];
-    }
-
-    
-    //  handle request errors from Guzzle
-    
-    private function handleRequestError(RequestException $e)
-    {
-        if ($e->hasResponse()) {
-            $response = $e->getResponse();
             $statusCode = $response->getStatusCode();
-
-            if ($statusCode == 401) {
-                return ['error' => 'Unauthorized: Invalid API key or credentials.'];
+            if ($statusCode !== 200) {
+                return null; // Handle unexpected status codes
             }
 
-            return [
-                'error' => 'API request failed with status ' . $statusCode,
-                'details' => json_decode($response->getBody(), true)
-            ];
-        }
+            // Attempt to decode the response
+            $responseBody = (string) $response->getBody();
+            $responseData = json_decode($responseBody, true);
 
-        return ['error' => 'Request error: ' . $e->getMessage()];
+            // Return null if JSON is invalid
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return null;
+            }
+
+            return $responseData;
+        } catch (ConnectException $e) {
+            // Handle network connection errors (e.g., timeout)
+            throw new \RuntimeException('Network connection error: ' . $e->getMessage());
+        } catch (RequestException $e) {
+            // Handle other request errors
+            throw new \RuntimeException('HTTP request error: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            // General error handling
+            throw new \RuntimeException('An error occurred: ' . $e->getMessage());
+        }
     }
 }
