@@ -63,6 +63,16 @@ class ItexmoSms{
 
         return $this->sendRequest('broadcast-otp', $payload);
     }
+
+    public function query(array $queryParams){
+        $payload = array_merge([
+            'Email' => $this->config['email'],
+            'password' => $this->config['password'],
+            'ApiCode' => $this->config['api_code'],
+        ], $queryParams);
+
+        return $this->sendRequest('query', $payload);
+    }
     
 
 }
