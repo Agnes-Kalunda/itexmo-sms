@@ -38,6 +38,14 @@ $response = $itexmoSms->broadcastOTP('12345678909', 'Your OTP is 123456');
 print_r($response);
 
 
+// query endpoint
+
+echo '\nTesting query....\n';
+$queryParams = ['ApiCode' => 'api_key'];
+$response =$itexmoSms->query($queryParams);
+print_r($response);
+
+
 
 
 ?>
