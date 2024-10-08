@@ -33,8 +33,8 @@ print_r($response);
 
 // broadcastOTP test
 
-echo '\nTestinh boradcastOTP...\n';
-$response = $itexmoSms->broadcastOTP('12345678909', 'Your OTP is 123456');
+echo '\nTesting boradcastOTP...\n';
+$response = $itexmoSms->broadcastOtp('12345678909', 'Your OTP is 123456');
 print_r($response);
 
 
