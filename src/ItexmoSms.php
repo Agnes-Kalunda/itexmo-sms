@@ -61,7 +61,7 @@ class ItexmoSms{
             'Message' => $message,
         ];
 
-        return $this->sendRequest('boradcast-otp', $payload);
+        return $this->sendRequest('broadcast-otp', $payload);
     }
     
 
