@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 use Agnes\ItexmoSms\ItexmoSms;
 use PHPUnit\Framework\TestCase;
@@ -6,73 +6,72 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
 
-class ItexmoSmsTest extends TestCase{
+class ItexmoSmsTest extends TestCase
+{
     protected $itexmoSms;
     protected $mockClient;
 
-    protected function setUp(){
-
-        // mock GuzzleHttp client
+    protected function setUp(): void
+    {
+        // Mock the GuzzleHttp client
         $this->mockClient = Mockery::mock(Client::class);
 
-        // mock config
-        $config =[
-            "email"=> "email@example.com",
-            "password"=> "password",
-            "api_code"=> "api_code",
+        // Mock the config
+        $config = [
+            'email' => 'your_email@example.com',
+            'password' => 'your_password',
+            'api_code' => 'your_api_code',
         ];
 
-        // instance of ItexmoSms with mocked client
-
+        // Create an instance of ItexmoSms with mocked client
         $this->itexmoSms = new ItexmoSms($config);
         $this->itexmoSms->client = $this->mockClient;
     }
 
-    public function testBroadcast(){
-        // mock response from HTTP client
+    public function testBroadcast()
+    {
+    
         $this->mockClient
-            ->shouldReceive("post")
+            ->shouldReceive('post')
             ->once()
-            ->with("broadcast", Mockery::on(function($payload){
+            ->with('broadcast', Mockery::on(function ($payload) {
                 return isset($payload['form_params']['Recipients']);
-
             }))
-            ->andReturn(new Response(200,[], json_decode(['status' => 'ok'])));
+            ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
 
     
-        $response = $this->itexmoSms->broadcast(['12345678909'],'Test message');
+        $response = $this->itexmoSms->broadcast(['12345678909'], 'Test message');
 
-        $this->assertEquals(['status' => 'OK'], $response);       
-
+        // Assert response
+        $this->assertEquals(['status' => 'OK'], $response);
     }
 
-    public function testBroadcast2d(){}{
-
-        // mockHTTP client response
+    public function testBroadcast2d()
+    {
+        
         $this->mockClient
-             ->shouldReceive('post')
-             ->once()
-             ->with('broadcast-2d', Mockery::on(function($payload){
+            ->shouldReceive('post')
+            ->once()
+            ->with('broadcast-2d', Mockery::on(function ($payload) {
                 return isset($payload['form_params']['Messages']);
+            }))
+            ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
 
-        }))
-            ->andReturn(new Response(200,[], json_decode(['status'=> 'OK'])));
-
-
-        $messages =[
-            ['Recipient' =>'12345678909','Message'=> 'Message 1'],
-            ['Recipient' =>'12345678909','Message'=> 'Message 1'],
+        
+        $messages = [
+            ['Recipient' => '12345678909', 'Message' => 'Message 1'],
+            ['Recipient' => '98765432109', 'Message' => 'Message 2'],
         ];
 
-        response = $this->itexmoSms->broadcast2d($messages);
+        $response = $this->itexmoSms->broadcast2d($messages);
 
-        // assert response
-        $this->assertEquals(['status'=> 'OK'], $response);
+    
+        $this->assertEquals(['status' => 'OK'], $response);
     }
 
     public function testBroadcastOtp()
     {
-        // Mockresponse from HTTP client
+        // Mock response from HTTP client
         $this->mockClient
             ->shouldReceive('post')
             ->once()
@@ -84,13 +83,31 @@ class ItexmoSmsTest extends TestCase{
         
         $response = $this->itexmoSms->broadcastOtp('12345678909', 'Your OTP is 123456');
 
+    
+        $this->assertEquals(['status' => 'OK'], $response);
+    }
+
+    public function testQuery()
+    {
+        // Mock response from HTTP client
+        $this->mockClient
+            ->shouldReceive('post')
+            ->once()
+            ->with('query', Mockery::on(function ($payload) {
+                return isset($payload['form_params']['ApiCode']);
+            }))
+            ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
+
+        
+        $response = $this->itexmoSms->query(['ApiCode' => 'api_key']);
+
         // Assert response
         $this->assertEquals(['status' => 'OK'], $response);
     }
 
-
-
-
+    protected function tearDown(): void
+    {
+        Mockery::close();
+    }
 }
 
-?>
