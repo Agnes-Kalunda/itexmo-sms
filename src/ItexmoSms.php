@@ -73,9 +73,25 @@ class ItexmoSms{
 
         return $this->sendRequest('query', $payload);
     }
+
+    protected function sendRequest(string $endpoint, array $payload)
+    {
+        try {
+            $response = $this->client->post($endpoint, [
+                'form_params' => $payload,
+            ]);
+
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+        
+            return ['error' => $e->getMessage()];
+        }
+    }
+}
+
     
 
-}
+
 
 
 
