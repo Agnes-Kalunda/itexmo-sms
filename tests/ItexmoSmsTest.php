@@ -21,6 +21,28 @@ class ItexmoSmsTest extends TestCase{
             "password"=> "password",
             "api_code"=> "api_code",
         ];
+
+        // instance of ItexmoSms with mocked client
+
+        $this->itexmoSms = new ItexmoSms($config);
+        $this->itexmoSms->client = $this->mockClient;
+    }
+
+    public function testBroadcast(){
+        // mock response from HTTP client
+        $this->mockClient
+            ->shouldReceive("post")
+            ->once()
+            ->with("broadcast", Mockery::on(function($payload){
+                return isset($payload['form_params']['Recipients']);
+
+            }))
+            ->andReturn(new Response(200,[], json_decode(['status' => 'ok'])));
+
+    
+    
+            
+
     }
 }
 
