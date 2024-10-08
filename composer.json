@@ -1,0 +1,21 @@
+{
+    "name": "agnes/itexmo-sms",
+    "description": "Itexmo SMS Gateway Integration",
+    "type": "library",
+    "require": {
+        "guzzlehttp/guzzle": "^7.9"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Agnes\\ItexmoSms\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Agnes",
+            "email": "agypeter97@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
