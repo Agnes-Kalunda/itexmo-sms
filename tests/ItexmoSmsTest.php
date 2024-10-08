@@ -70,6 +70,24 @@ class ItexmoSmsTest extends TestCase{
         $this->assertEquals(['status'=> 'OK'], $response);
     }
 
+    public function testBroadcastOtp()
+    {
+        // Mockresponse from HTTP client
+        $this->mockClient
+            ->shouldReceive('post')
+            ->once()
+            ->with('broadcast-otp', Mockery::on(function ($payload) {
+                return isset($payload['form_params']['Recipients']);
+            }))
+            ->andReturn(new Response(200, [], json_encode(['status' => 'OK'])));
+
+        
+        $response = $this->itexmoSms->broadcastOtp('12345678909', 'Your OTP is 123456');
+
+        // Assert response
+        $this->assertEquals(['status' => 'OK'], $response);
+    }
+
 
 
 
