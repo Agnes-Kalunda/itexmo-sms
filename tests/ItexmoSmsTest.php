@@ -40,6 +40,9 @@ class ItexmoSmsTest extends TestCase{
             ->andReturn(new Response(200,[], json_decode(['status' => 'ok'])));
 
     
+    $response = $this->itexmoSms->broadcast(['12345678909'],'Test message');
+
+    $this->assertEquals(['status' => 'OK'], $response);
     
             
 
