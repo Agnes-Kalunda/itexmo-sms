@@ -31,6 +31,25 @@ class ItexmoSms{
 
         return $this->sendRequest('broadcast', $payload);
     }
+
+    // funto handle broadcast-2d endpoint
+
+    public function broadcast2d(array $messages, ?string $senderId = null){
+        $payload = [
+            'Email' => $this->config['email'],
+            'password' => $this->config['password'],
+            'ApiCode' => $this->config['api_code'],
+            'Messages' => json_encode($messages),
+        ];
+
+        if ($senderId){
+            $payload['SenderId'] = $senderId;
+        }
+
+        return $this->sendRequest('broadcast-2d', $payload);
+
+
+    }
     
 
 }
