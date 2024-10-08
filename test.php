@@ -1,52 +1,8 @@
+<?php
 
-<?php 
-require 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-use Agnes\ItexmoSms\ItexmoSms;
+use GuzzleHttp\Client;
 
-// itexmo credentials
-$config = [
-    'email' => 'your_email@example.com',
-    'password' => 'your_password',
-    'api_code' => 'your_api_code',
-];
-
-// instance of itexmo class
-$itexmoSms = new ItexmoSms($config);
-
-echo "Testing Broadcast..\n";
-
-$response = $itexmoSms->broadcast(['12345678909'], 'Test message from sample');
-print_r($response);
-
-
-// broadcast2d endpoint test
-echo "\nTesting broadcast2d.....\n";
-$message = [
-    ['Recipient' => '12345678909', 'Message' => 'Message 1'],
-    ['Recipient' => '12345678909', 'Message' => 'Message 1']
-];
-
-$response = $itexmoSms->broadcast2d($message);
-print_r($response);
-
-
-// broadcastOTP test
-
-echo '\nTesting boradcastOTP...\n';
-$response = $itexmoSms->broadcastOtp('12345678909', 'Your OTP is 123456');
-print_r($response);
-
-
-// query endpoint
-
-echo '\nTesting query....\n';
-$queryParams = ['ApiCode' => 'api_key'];
-$response =$itexmoSms->query($queryParams);
-print_r($response);
-
-
-
-
-?>
-
+$client = new Client();
+echo "Client class is accessible!";

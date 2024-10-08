@@ -3,7 +3,7 @@
         'name' => 'agnes/itexmo-sms',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '2cbd9f0ec2c90296a0689bff5c26de888ab26023',
+        'reference' => 'a1f36057c3c5ab03d64f1d43ca88f04c369f3317',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'agnes/itexmo-sms' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '2cbd9f0ec2c90296a0689bff5c26de888ab26023',
+            'reference' => 'a1f36057c3c5ab03d64f1d43ca88f04c369f3317',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
