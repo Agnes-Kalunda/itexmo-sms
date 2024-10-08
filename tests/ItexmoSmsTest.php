@@ -40,13 +40,39 @@ class ItexmoSmsTest extends TestCase{
             ->andReturn(new Response(200,[], json_decode(['status' => 'ok'])));
 
     
-    $response = $this->itexmoSms->broadcast(['12345678909'],'Test message');
+        $response = $this->itexmoSms->broadcast(['12345678909'],'Test message');
 
-    $this->assertEquals(['status' => 'OK'], $response);
-    
-            
+        $this->assertEquals(['status' => 'OK'], $response);       
 
     }
+
+    public function testBroadcast2d(){}{
+
+        // mockHTTP client response
+        $this->mockClient
+             ->shouldReceive('post')
+             ->once()
+             ->with('broadcast-2d', Mockery::on(function($payload){
+                return isset($payload['form_params']['Messages']);
+
+        }))
+            ->andReturn(new Response(200,[], json_decode(['status'=> 'OK'])));
+
+
+        $messages =[
+            ['Recipient' =>'12345678909','Message'=> 'Message 1'],
+            ['Recipient' =>'12345678909','Message'=> 'Message 1'],
+        ];
+
+        response = $this->itexmoSms->broadcast2d($messages);
+
+        // assert response
+        $this->assertEquals(['status'=> 'OK'], $response);
+    }
+
+
+
+
 }
 
 ?>
