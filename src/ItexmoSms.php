@@ -1,101 +1,97 @@
-<?php 
+<?php
 
 namespace Agnes\ItexmoSms;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 
-class ItexmoSms{
-    protected $config;
+class ItexmoSms {
     protected $client;
+    protected $email;
+    protected $password;
+    protected $api_code;
 
-
-    public function __construct(array $config){
-        $this->config = $config;
-        $this->client = new Client([
-            'base_uri'=> 'https://api.itexmo.com/api/',
-            'timeout'=>10.0,
-        ]);
-
+    public function __construct(array $config, Client $client = null) {
+        $this->client = $client ?? new Client(); 
+        $this->email = $config['email'];
+        $this->password = $config['password'];
+        $this->api_code = $config['api_code'];
     }
 
-    public function broadcast(array $recipients, string $message, ?string $senderId =null){
+    public function broadcast(array $recipients, string $message) {
         $payload = [
-            'Email'=> $this->config['email'],
-            'password' => $this->config['password'],
-            'ApiCode' => $this->config['api_code'],
-            'Recipients' => json_encode($recipients),
-            'Message' => $message,
+            'form_params' => [
+                'Recipients' => implode(',', $recipients),
+                'Message' => $message,
+                'Email' => $this->email,
+                'Password' => $this->password,
+                'ApiCode' => $this->api_code,
+            ],
         ];
 
-        if ($senderId){
-            $payload['SenderId'] = $senderId;
-        }
-
-        return $this->sendRequest('broadcast', $payload);
-    }
-
-    // fun to handle broadcast-2d endpoint
-
-    public function broadcast2d(array $messages, ?string $senderId = null){
-        $payload = [
-            'Email' => $this->config['email'],
-            'password' => $this->config['password'],
-            'ApiCode' => $this->config['api_code'],
-            'Messages' => json_encode($messages),
-        ];
-
-        if ($senderId){
-            $payload['SenderId'] = $senderId;
-        }
-
-        return $this->sendRequest('broadcast-2d', $payload);
-
-
-    }
-
-
-    public function broadcastOtp(string $recipient, string $message){
-        $payload = [
-            'Email' => $this->config['email'],
-            'password' => $this->config['password'],
-            'ApiCode' => $this->config['api_code'],
-            'Recipients' => json_encode([$recipient]),
-            'Message' => $message,
-        ];
-
-        return $this->sendRequest('broadcast-otp', $payload);
-    }
-
-    public function query(array $queryParams){
-        $payload = array_merge([
-            'Email' => $this->config['email'],
-            'password' => $this->config['password'],
-            'ApiCode' => $this->config['api_code'],
-        ], $queryParams);
-
-        return $this->sendRequest('query', $payload);
-    }
-
-    protected function sendRequest(string $endpoint, array $payload)
-    {
         try {
-            $response = $this->client->post($endpoint, [
-                'form_params' => $payload,
-            ]);
+            $response = $this->client->post('broadcast', $payload);
+            return json_decode($response->getBody(), true);
+        } catch (RequestException $e) {
+            // Handle exceptions
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
+    }
 
-            return json_decode($response->getBody()->getContents(), true);
-        } catch (GuzzleException $e) {
+    public function broadcast2d(array $messages) {
+        $payload = [
+            'form_params' => [
+                'Messages' => json_encode($messages),
+                'Email' => $this->email,
+                'Password' => $this->password,
+                'ApiCode' => $this->api_code,
+            ],
+        ];
+
+        try {
+            $response = $this->client->post('broadcast-2d', $payload);
+            return json_decode($response->getBody(), true);
+        } catch (RequestException $e) {
+
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function broadcastOtp(string $recipient, string $message) {
+        $payload = [
+            'form_params' => [
+                'Recipients' => $recipient,
+                'Message' => $message,
+                'Email' => $this->email,
+                'Password' => $this->password,
+                'ApiCode' => $this->api_code,
+            ],
+        ];
+
+        try {
+            $response = $this->client->post('broadcast-otp', $payload);
+            return json_decode($response->getBody(), true);
+        } catch (RequestException $e) {
+            
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function query(array $params) {
+        $payload = [
+            'form_params' => array_merge($params, [
+                'Email' => $this->email,
+                'Password' => $this->password,
+                'ApiCode' => $this->api_code,
+            ]),
+        ];
+
+        try {
+            $response = $this->client->post('query', $payload);
+            return json_decode($response->getBody(), true);
+        } catch (RequestException $e) {
         
-            return ['error' => $e->getMessage()];
+            return ['status' => 'error', 'message' => $e->getMessage()];
         }
     }
 }
-
-    
-
-
-
-
-
-?>

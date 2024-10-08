@@ -1,0 +1,1 @@
+{"version":1,"defects":{"ItexmoSmsTest::testBroadcast":4,"ItexmoSmsTest::testBroadcast2d":4,"ItexmoSmsTest::testBroadcastOtp":4,"ItexmoSmsTest::testQuery":4},"times":{"ItexmoSmsTest::testBroadcast":0.015,"ItexmoSmsTest::testBroadcast2d":0,"ItexmoSmsTest::testBroadcastOtp":0,"ItexmoSmsTest::testQuery":0}}
