@@ -31,6 +31,13 @@ $response = $itexmoSms->broadcast2d($message);
 print_r($response);
 
 
+// broadcastOTP test
+
+echo '\nTestinh boradcastOTP...\n';
+$response = $itexmoSms->broadcastOTP('12345678909', 'Your OTP is 123456');
+print_r($response);
+
+
 
 
 ?>
