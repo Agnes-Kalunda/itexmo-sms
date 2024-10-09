@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /*
  * This file is part of PHPUnit.
  *
@@ -9,18 +9,15 @@
  */
 namespace PHPUnit\Util\TestDox;
 
-use function sprintf;
-use PHPUnit\Framework\TestResult;
-
 /**
- * @internal This class is not covered by the backward compatibility promise for PHPUnit
+ * Prints TestDox documentation in HTML format.
  */
 final class HtmlResultPrinter extends ResultPrinter
 {
     /**
      * @var string
      */
-    private const PAGE_HEADER = <<<'EOT'
+    private const PAGE_HEADER = <<<EOT
 <!doctype html>
 <html lang="en">
     <head>
@@ -29,47 +26,24 @@ final class HtmlResultPrinter extends ResultPrinter
         <style>
             body {
                 text-rendering: optimizeLegibility;
-                font-family: Source SansSerif Pro, Arial, sans-serif;
                 font-variant-ligatures: common-ligatures;
                 font-kerning: normal;
-                margin-left: 2rem;
-                background-color: #fff;
-                color: #000;
+                margin-left: 2em;
             }
 
             body > ul > li {
-                font-size: larger;
+                font-family: Source Serif Pro, PT Sans, Trebuchet MS, Helvetica, Arial;
+                font-size: 2em;
             }
 
             h2 {
-                font-size: larger;
-                text-decoration-line: underline;
-                text-decoration-thickness: 2px;
-                margin: 0;
-                padding: 0.5rem 0;
+                font-family: Tahoma, Helvetica, Arial;
+                font-size: 3em;
             }
 
             ul {
                 list-style: none;
-                margin: 0 0 2rem;
-                padding: 0 0 0 1rem;
-                text-indent: -1rem;
-            }
-
-            .success:before {
-                color: #4e9a06;
-                content: '✓';
-                padding-right: 0.5rem;
-            }
-
-            .defect {
-                color: #a40000;
-            }
-
-            .defect:before {
-                color: #a40000;
-                content: '✗';
-                padding-right: 0.5rem;
+                margin-bottom: 1em;
             }
         </style>
     </head>
@@ -79,9 +53,9 @@ EOT;
     /**
      * @var string
      */
-    private const CLASS_HEADER = <<<'EOT'
+    private const CLASS_HEADER = <<<EOT
 
-        <h2>%s</h2>
+        <h2 id="%s">%s</h2>
         <ul>
 
 EOT;
@@ -89,22 +63,18 @@ EOT;
     /**
      * @var string
      */
-    private const CLASS_FOOTER = <<<'EOT'
+    private const CLASS_FOOTER = <<<EOT
         </ul>
 EOT;
 
     /**
      * @var string
      */
-    private const PAGE_FOOTER = <<<'EOT'
+    private const PAGE_FOOTER = <<<EOT
 
     </body>
 </html>
 EOT;
-
-    public function printResult(TestResult $result): void
-    {
-    }
 
     /**
      * Handler for 'start run' event.
@@ -120,24 +90,26 @@ EOT;
     protected function startClass(string $name): void
     {
         $this->write(
-            sprintf(
+            \sprintf(
                 self::CLASS_HEADER,
-                $this->currentTestClassPrettified,
-            ),
+                $name,
+                $this->currentTestClassPrettified
+            )
         );
     }
 
     /**
      * Handler for 'on test' event.
      */
-    protected function onTest(string $name, bool $success = true): void
+    protected function onTest($name, bool $success = true): void
     {
         $this->write(
-            sprintf(
-                "            <li class=\"%s\">%s</li>\n",
-                $success ? 'success' : 'defect',
-                $name,
-            ),
+            \sprintf(
+                "            <li style=\"color: %s;\">%s %s</li>\n",
+                $success ? '#555753' : '#ef2929',
+                $success ? '✓' : '❌',
+                $name
+            )
         );
     }
 

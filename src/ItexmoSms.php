@@ -4,60 +4,84 @@ namespace Agnes\ItexmoSms;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ConnectException;
 
 class ItexmoSms
 {
+    protected $api_code;
     protected $client;
-    protected $apiCode;
 
     public function __construct(array $config)
     {
-        $this->apiCode = $config['api_code'];
-        $this->client = new Client(['base_uri' => 'https://api.itexmo.com/']);
+        $this->api_code = $config['api_code'] ?? '';
+        $this->client = new Client(); 
     }
 
-    // Setter method for client to allow injection during testing
     public function setClient(Client $client)
     {
         $this->client = $client;
     }
 
-    public function broadcast(array $recipients, string $message)
+    public function broadcast($numbers, $message)
     {
         try {
             $response = $this->client->post('/api/send', [
                 'json' => [
-                    'to' => $recipients,
+                    'api_code' => $this->api_code,
+                    'numbers' => $numbers,
                     'message' => $message,
-                    'api_code' => $this->apiCode
                 ]
             ]);
 
-            $statusCode = $response->getStatusCode();
-            if ($statusCode !== 200) {
-                return null; // Handle unexpected status codes
+            $body = json_decode($response->getBody(), true);
+
+            // handle response based on Itexmo documentatios
+            if (isset($body['status'])) {
+                return $this->handleApiResponse($body['status']);
             }
 
-            // Attempt to decode the response
-            $responseBody = (string) $response->getBody();
-            $responseData = json_decode($responseBody, true);
+            throw new \RuntimeException('Invalid API response');
 
-            // Return null if JSON is invalid
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return null;
-            }
-
-            return $responseData;
-        } catch (ConnectException $e) {
-            // Handle network connection errors (e.g., timeout)
-            throw new \RuntimeException('Network connection error: ' . $e->getMessage());
         } catch (RequestException $e) {
-            // Handle other request errors
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                if ($statusCode === 401) {
+                    return 'Unauthorized request. Check your API key.';
+                }
+            }
+
+            
             throw new \RuntimeException('HTTP request error: ' . $e->getMessage());
-        } catch (\Exception $e) {
-            // General error handling
-            throw new \RuntimeException('An error occurred: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * handle different API status codes according to Itexmo documentation.
+     */
+    private function handleApiResponse($status)
+    {
+        switch ($status) {
+            case 0:
+                return 'SUCCESS: Message sent successfully.';
+            case 1:
+                return 'ERROR: Invalid Number.';
+            case 2:
+                return 'ERROR: No balance or insufficient credit.';
+            case 3:
+                return 'ERROR: Invalid API code.';
+            case 4:
+                return 'ERROR: Maximum number of characters exceeded.';
+            case 5:
+                return 'ERROR: SMS is blocked due to spam content.';
+            case 6:
+                return 'ERROR: Invalid sender name.';
+            case 7:
+                return 'ERROR: Invalid mobile number format.';
+            case 8:
+                return 'ERROR: Unauthorized request or API not allowed.';
+            case 9:
+                return 'ERROR: API deactivated.';
+            default:
+                return 'ERROR: Unrecognized status code.';
         }
     }
 }

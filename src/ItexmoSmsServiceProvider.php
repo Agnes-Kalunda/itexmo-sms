@@ -2,36 +2,27 @@
 
 namespace Agnes\ItexmoSms;
 
-class ItexmoSmsServiceProvider
+use Illuminate\Support\ServiceProvider;
+
+class ItexmoSmsServiceProvider extends ServiceProvider
 {
-    protected $itexmoSms;
-
-    public function __construct(array $config)
+    public function register()
     {
-        // Validate the config
-        if (!isset($config['api_code'])) {
-            throw new \InvalidArgumentException('API code is required.');
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/itexmo.php', 'itexmo'
+        );
+
+        $this->app->singleton(ItexmoSms::class, function ($app) {
+            return new ItexmoSms($app['config']['itexmo']);
+        });
+    }
+
+    public function boot()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../config/itexmo.php' => $this->app->configPath('itexmo.php'),
+            ], 'config');
         }
-
-        // Instantiate the ItexmoSms class
-        $this->itexmoSms = new ItexmoSms($config);
-    }
-
-    public function getItexmoSms()
-    {
-        return $this->itexmoSms;
-    }
-
-    public function publishConfig($filePath)
-    {
-        $configContent = <<<'PHP'
-<?php
-
-return [
-    'api_code' => 'your_api_code',
-];
-PHP;
-
-        file_put_contents($filePath, $configContent);
     }
 }

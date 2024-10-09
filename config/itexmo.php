@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'email' => 'your_email@example.com',
-    'password' => 'your_password',
-    'api_code' => 'your_api_code',
+    'api_code' => function_exists('env') ? env('ITEXMO_API_CODE', '') : '',
+    // Add any other configuration options here
 ];

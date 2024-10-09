@@ -1,22 +1,25 @@
 <?php
 
-require 'vendor/autoload.php'; 
+require 'vendor/autoload.php';
 
-use Agnes\ItexmoSms\ItexmoSmsServiceProvider;
+use Agnes\ItexmoSms\ItexmoSms;
+use Illuminate\Container\Container;
 
+// Create a new container instance
+$container = new Container();
 
-$config = include 'config/itexmo.php'; 
+// Register the ItexmoSms class with the container
+$container->singleton(ItexmoSms::class, function () {
+    $config = include 'config/itexmo.php';
+    return new ItexmoSms($config);
+});
 
-// Instantiate the service provider
-$serviceProvider = new ItexmoSmsServiceProvider($config);
+// Resolve the ItexmoSms instance from the container
+$itexmoSms = $container->make(ItexmoSms::class);
 
-// Get ItexmoSms instance
-$itexmoSms = $serviceProvider->getItexmoSms();
-
-// Use instance to send an SMS
 try {
     $response = $itexmoSms->broadcast(['recipient_number'], 'Your message here.');
-    print_r($response); 
+    print_r($response);
 } catch (\RuntimeException $e) {
-    echo 'Error: ' . $e->getMessage(); 
+    echo 'Error: ' . $e->getMessage();
 }

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /*
  * This file is part of PHPUnit.
  *
@@ -9,32 +9,40 @@
  */
 namespace PHPUnit\Framework;
 
-use SebastianBergmann\RecursionContext\InvalidArgumentException;
-
 /**
- * @internal This class is not covered by the backward compatibility promise for PHPUnit
+ * An incomplete test case
  */
-final class IncompleteTestCase extends TestCase
+class IncompleteTestCase extends TestCase
 {
     /**
-     * @var ?bool
+     * @var string
+     */
+    protected $message = '';
+
+    /**
+     * @var bool
      */
     protected $backupGlobals = false;
 
     /**
-     * @var ?bool
+     * @var bool
      */
     protected $backupStaticAttributes = false;
 
     /**
-     * @var ?bool
+     * @var bool
      */
     protected $runTestInSeparateProcess = false;
 
     /**
-     * @var string
+     * @var bool
      */
-    private $message;
+    protected $useErrorHandler = false;
+
+    /**
+     * @var bool
+     */
+    protected $useOutputBuffering = false;
 
     public function __construct(string $className, string $methodName, string $message = '')
     {
@@ -51,7 +59,7 @@ final class IncompleteTestCase extends TestCase
     /**
      * Returns a string representation of the test case.
      *
-     * @throws InvalidArgumentException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function toString(): string
     {
