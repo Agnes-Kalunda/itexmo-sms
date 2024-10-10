@@ -82,14 +82,28 @@ class ItexmoSms
 
         return $this->sendRequest('query', $data);
     }
-  
 
-            // handle response based on Itexmo documentatios
+
+
+    private function sendRequest(string $endpoint, array $data): array{
+        try{
+            $response = $this->client->post($endpoint, ['form_params'=> $data]);
+            $body = json_decode($response->getBody(), true);
+  
             if (isset($body['status'])) {
-                return $this->handleApiResponse($body['status']);
+                return [
+                    'success' => $body['status'] ===0,
+                    'message'=> $this->handleApiResponse($body['status']),
+                    'data'=>$body
+                ];
             }
 
-            throw new \RuntimeException('Invalid API response');
+
+            return[
+                'success'=> false,
+                'message'=> 'Invalid API response',
+                'data'=> $body,
+            ];
 
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
