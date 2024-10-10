@@ -23,23 +23,24 @@ class ItexmoSms
         $this->client = $client;
     }
 
-    public function broadcast($numbers, string $message, ?string $sender_id = null): array
+    // broadcast endpoint
+    public function broadcast($recipients, string $message, ?string $sender_id = null): array
     {
-        $data =[
+        $data = [
             'api_code' => $this->api_code,
             'recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
-            'message'=> $message,
+            'message' => $message,
         ];
 
-        if ($sender_id){
+        if ($sender_id) {
             $data['sender_id'] = $sender_id;
         }
-        
+
         return $this->sendRequest('broadcast', $data);
     }
 
 
-    // send messages to various recipients . broadcast2d endpoint
+    // send messages to various recipients . broadcast-2d endpoint
 
     public function broadcast2d(array $messages, ?string $sender_id = null): array
     {
@@ -57,7 +58,7 @@ class ItexmoSms
     }
 
 
-    // send OTP msg to recipient . broadcastOTP endpoint
+    // send OTP msg to recipient . broadcast-otp endpoint
 
     public function broadcastOTP(string $recipient, string $message): array
     {
