@@ -48,12 +48,26 @@ class ItexmoSms
             'messaages' => json_encode($messages),
         ];
 
-        
+        if ($sender_id){
+            $data['sender_id'] = $sender_id;
+        }
+
+        return $this->sendRequest('broadcast-d2', $data);
+
     }
 
 
+    // send OTP msg to recipient . broadcastOTP endpoint
 
+    public function broadcastOTP(string $recipient, string $message): array
+    {
+        $data = [
+            'api_code' => $this->api_code,
+            'recipient' => $recipient,
+            'message' => $message,
+        ];
 
+    }
   
 
             // handle response based on Itexmo documentatios
