@@ -26,4 +26,8 @@ class ItexmoSmsServiceProvider extends ServiceProvider implements DeferrableProv
             ], 'config');
         }
     }
+
+    public function provides(){
+        return [ItexmoSms::class];
+    }
 }
