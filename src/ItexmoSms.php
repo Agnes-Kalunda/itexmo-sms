@@ -27,7 +27,7 @@ class ItexmoSms
     {
         $data =[
             'api_code' => $this->api_code,
-            'recipients'=> is_array($recipients) ? json_encode($recipients) : $recipients,
+            'recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
             'message'=> $message,
         ];
 
@@ -120,31 +120,21 @@ class ItexmoSms
     /**
      * handle different API status codes according to Itexmo documentation.
      */
-    private function handleApiResponse($status)
-    {
-        switch ($status) {
-            case 0:
-                return 'SUCCESS: Message sent successfully.';
-            case 1:
-                return 'ERROR: Invalid Number.';
-            case 2:
-                return 'ERROR: No balance or insufficient credit.';
-            case 3:
-                return 'ERROR: Invalid API code.';
-            case 4:
-                return 'ERROR: Maximum number of characters exceeded.';
-            case 5:
-                return 'ERROR: SMS is blocked due to spam content.';
-            case 6:
-                return 'ERROR: Invalid sender name.';
-            case 7:
-                return 'ERROR: Invalid mobile number format.';
-            case 8:
-                return 'ERROR: Unauthorized request or API not allowed.';
-            case 9:
-                return 'ERROR: API deactivated.';
-            default:
-                return 'ERROR: Unrecognized status code.';
-        }
+    private function handleApiResponse(int $status): string{
+
+        $responses = [
+            0 => 'Message sent successfully.',
+            1 => 'Invalid Number.',
+            2 => 'No balance or insufficient credit.',
+            3 => 'Invalid API code.',
+            4 => 'Maximum number of characters exceeded.',
+            5 => 'SMS is blocked due to spam content.',
+            6 => 'Invalid sender name.',
+            7 => 'Invalid mobile number format.',
+            8 => 'Unauthorized request or API not allowed.',
+            9 => 'API deactivated.',
+        ];
+
+        return $responses[$status] ??'Unrecognized status code.';
     }
 }
