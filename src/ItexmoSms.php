@@ -39,6 +39,19 @@ class ItexmoSms
     }
 
 
+    // send messages to various recipients . broadcast2d endpoint
+
+    public function broadcast2d(array $messages, ?string $sender_id = null): array
+    {
+        $data = [
+            'api_code'=> $this->api_code,
+            'messaages' => json_encode($messages),
+        ];
+
+        
+    }
+
+
 
 
   
