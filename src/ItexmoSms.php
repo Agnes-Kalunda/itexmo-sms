@@ -9,14 +9,22 @@ class ItexmoSms
 {
     protected $api_code;
     protected $client;
-    
-    protected $base_url = 'https://api.itexmo.com/api/';
-    protected $maxMessageLength = 160; 
+    protected $base_url;
+    protected $default_sender_id;
+    protected $maxMessageLength;
+    protected $retry_attempts;
+    protected $retry_delay;
 
     public function __construct(array $config)
     {
         $this->api_code = $config['api_code'] ?? '';
-        $this->client = new Client(['base_uri' => $this->base_url]); 
+        $this->base_url = $config['api_base_url'] ?? 'https://api.itexmo.com/api/';
+        $this->default_sender_id = $config['default_sender_id'] ?? '';
+        $this->maxMessageLength = $config['max_message_length'] ?? 160;
+        $this->retry_attempts = $config['retry_attempts'] ?? 3;
+        $this->retry_delay = $config['retry_delay'] ?? 5;
+
+        $this->client = new Client(['base_uri' => $this->base_url]);
     }
 
     public function setClient(Client $client)
@@ -27,16 +35,14 @@ class ItexmoSms
     public function broadcast($recipients, string $message, ?string $sender_id = null): array
     {
         $this->validateMessageLength($message);
+        $sender_id = $sender_id ?? $this->default_sender_id;
 
         $data = [
             'api_code' => $this->api_code,
             'recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
             'message' => $message,
+            'sender_id' => $sender_id,
         ];
-
-        if ($sender_id) {
-            $data['sender_id'] = $sender_id;
-        }
 
         return $this->sendRequest('broadcast', $data);
     }
@@ -44,24 +50,23 @@ class ItexmoSms
     public function broadcast2d(array $messages, ?string $sender_id = null): array
     {
         foreach ($messages as $msg) {
-            $this->validateMessageLength($msg[1]); 
+            $this->validateMessageLength($msg[1]);
         }
+
+        $sender_id = $sender_id ?? $this->default_sender_id;
 
         $data = [
             'api_code' => $this->api_code,
-            'messages' => json_encode($messages), 
+            'messages' => json_encode($messages),
+            'sender_id' => $sender_id,
         ];
-
-        if ($sender_id){
-            $data['sender_id'] = $sender_id;
-        }
 
         return $this->sendRequest('broadcast-d2', $data);
     }
 
     public function broadcastOTP(string $recipient, string $message): array
     {
-        $this->validateMessageLength($message); 
+        $this->validateMessageLength($message);
 
         $data = [
             'api_code' => $this->api_code,
