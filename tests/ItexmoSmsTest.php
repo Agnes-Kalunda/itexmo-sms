@@ -159,4 +159,56 @@ class ItexmoSmsTest extends TestCase
         ];
     }
 
+
+
+    /**
+     * @dataProvider multipleRecipientsProvider
+     */
+
+    public function testMultipleRecipients($method, $args)
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['status' => 0])) // Simulating success
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handlerStack]);
+
+        $this->itexmo->setClient($client);
+
+        $response = call_user_func_array([$this->itexmo, $method], $args);
+        $this->assertEquals([
+            'success' => true,
+            'message' => 'Message sent successfully.',
+            'data' => ['status' => 0]
+        ], $response);
+    }
+
+
+
+    /**
+     * Data provider for multiple recipients test.
+     * @return array[]
+     */
+    public function multipleRecipientsProvider()
+    {
+        return [
+            // broadcast: sending the same message to multiple recipients
+            'broadcast' => [
+                'broadcast', 
+                [['1234567890', '0987654321'], 'Test message to multiple recipients']
+            ],
+
+            // broadcast 2D: sending different messages to multiple recipients
+            'broadcast2d' => [
+                'broadcast2d', 
+                [[
+                    ['1234567890', 'Test message 1'],
+                    ['0987654321', 'Test message 2']
+                ]]
+            ],
+
+        ];
+    }
+
 }
