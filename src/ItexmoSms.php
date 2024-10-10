@@ -67,6 +67,20 @@ class ItexmoSms
             'message' => $message,
         ];
 
+        return $this->sendRequest('broadcast-otp', $data);
+
+    }
+
+    // query data from api
+
+    public function query(string $query_type, array $params = []): array
+    {
+        $data = array_merge([
+            'api_code'=> $this->api_code,
+            'query_type'=> $query_type,
+        ], $params);
+
+        return $this->sendRequest('query', $data);
     }
   
 
