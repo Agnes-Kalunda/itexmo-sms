@@ -23,7 +23,7 @@ class ItexmoSmsServiceProvider extends ServiceProvider implements DeferrableProv
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/itexmo.php' => $this->app->configPath('itexmo.php'),
-            ], 'config');
+            ], 'itexmo-config');
         }
     }
 
