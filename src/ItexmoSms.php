@@ -27,7 +27,7 @@ class ItexmoSms
     {
         $data =[
             'api_code' => $this->api_code,
-            'recipients'=> is_array($reipients) ? json_encode($reipients) : $reipients,
+            'recipients'=> is_array($recipients) ? json_encode($recipients) : $recipients,
             'message'=> $message,
         ];
 
@@ -106,17 +106,16 @@ class ItexmoSms
             ];
 
         } catch (RequestException $e) {
-            if ($e->hasResponse()) {
-                $statusCode = $e->getResponse()->getStatusCode();
-                if ($statusCode === 401) {
-                    return 'Unauthorized request. Check your API key.';
-                }
-            }
-
-            
-            throw new \RuntimeException('HTTP request error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->hasResponse() && $e->getResponse()->getStatusCode() === 401
+                    ? 'Unauthorized request. Check your API Key.'
+                    : 'HTTP request error:' .$e->getMessage(),
+                "data" => null,
+            ];
         }
     }
+          
 
     /**
      * handle different API status codes according to Itexmo documentation.
