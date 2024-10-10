@@ -84,6 +84,24 @@ class ItexmoSmsTest extends TestCase
         ], $response);
     }
 
+
+    public function testBroadcastOtpSuccessful(){
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['status'=>0]))
+            ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client(['handler'=> $handlerStack]);
+        $this->itexmo->setClient($client);
+
+        $response = $this->itexmo->broadcastOtp('12345678909', 'Your OTP is 123456');
+        $this->assertEquals([
+            'success'=> true,
+            'message'=> 'Message sent successfully',
+            'data'=> ['status'=> 0]
+        ], $response);
+    }
+
     public function testInsufficientCreditError()
     {
         // mock response with status 2 (insufficient credit)
