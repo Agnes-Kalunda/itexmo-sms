@@ -9,11 +9,13 @@ class ItexmoSms
 {
     protected $api_code;
     protected $client;
+    
+    protected $base_url = 'https://api.itexmo.com/api/';
 
     public function __construct(array $config)
     {
         $this->api_code = $config['api_code'] ?? '';
-        $this->client = new Client(); 
+        $this->client = new Client(['base_url' => $this->base_url]); 
     }
 
     public function setClient(Client $client)
