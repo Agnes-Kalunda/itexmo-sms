@@ -60,7 +60,29 @@ class ItexmoSmsTest extends TestCase
     }
 
 
-    
+    // test case for broadcast2d messaging
+
+    public function testBroadcast2dSuccessful(){
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['status'=> 0]))
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $client = new Client([''=> $handlerStack]);
+        $this->itexmo->setClient($client);
+
+        $messages =[
+            ['1234567890', 'Message 1'],
+            ['1234567891', 'Message 2']
+        ];
+
+        $response = $this->itexmo->broadcast2d($messages);
+        $this->assertEquals([
+            'success'=> true,
+            'message'=> 'Message sent successfully',
+            'data'=> ['status'=> 0]
+        ], $response);
+    }
 
     public function testInsufficientCreditError()
     {
