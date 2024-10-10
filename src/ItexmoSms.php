@@ -23,18 +23,25 @@ class ItexmoSms
         $this->client = $client;
     }
 
-    public function broadcast($numbers, $message)
+    public function broadcast($numbers, string $message, ?string $sender_id = null): array
     {
-        try {
-            $response = $this->client->post('/api/send', [
-                'json' => [
-                    'api_code' => $this->api_code,
-                    'numbers' => $numbers,
-                    'message' => $message,
-                ]
-            ]);
+        $data =[
+            'api_code' => $this->api_code,
+            'recipients'=> is_array($reipients) ? json_encode($reipients) : $reipients,
+            'message'=> $message,
+        ];
 
-            $body = json_decode($response->getBody(), true);
+        if ($sender_id){
+            $data['sender_id'] = $sender_id;
+        }
+        
+        return $this->sendRequest('broadcast', $data);
+    }
+
+
+
+
+  
 
             // handle response based on Itexmo documentatios
             if (isset($body['status'])) {
