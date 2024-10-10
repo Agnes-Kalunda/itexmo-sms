@@ -15,13 +15,20 @@ class ItexmoSmsTest extends TestCase
 
     protected function setUp(): void
     {
-        // dummy API code for testing
         $this->itexmo = new ItexmoSms(['api_code' => 'test_api_code']);
     }
 
-    public function testSuccessfulSmsSending()
+    public function testConstructorWithCustomConfig()
     {
-        // mock successful API response with status 0
+        $customItexmo = new ItexmoSms(['api_code' => 'custom_api_code']);
+        $this->assertInstanceOf(ItexmoSms::class, $customItexmo);
+    }
+
+    /**
+     * @dataProvider endpointProvider
+     */
+    public function testSuccessfulRequest($method, $args)
+    {
         $mock = new MockHandler([
             new Response(200, [], json_encode(['status' => 0]))
         ]);
@@ -31,82 +38,80 @@ class ItexmoSmsTest extends TestCase
 
         $this->itexmo->setClient($client);
 
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
+        $response = call_user_func_array([$this->itexmo, $method], $args);
         $this->assertEquals([
-            'success'=> true,
-            'message'=> 'Message sent successfully',
-            'data'=> ['status'=>0],
+            'success' => true,
+            'message' => 'Message sent successfully.',
+            'data' => ['status' => 0],
         ], $response);
     }
 
-    public function testInvalidNumberError()
+    /**
+     * @dataProvider endpointProvider
+     */
+    public function testAllErrorStatusCodes($method, $args)
     {
-        // mock response with status 1 (invalid number)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 1]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['invalid_number'], 'Test message');
-        $this->assertEquals([
-            'success'=> false,
-            'message'=> 'Invalid Number',
-            'data'=> ['status'=> 1],
-        ], $response);
-    }
-
-
-    // test case for broadcast2d messaging
-
-    public function testBroadcast2dSuccessful(){
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status'=> 0]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client([''=> $handlerStack]);
-        $this->itexmo->setClient($client);
-
-        $messages =[
-            ['1234567890', 'Message 1'],
-            ['1234567891', 'Message 2']
+        $errorCodes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        $errorMessages = [
+            1 => 'Invalid Number.',
+            2 => 'No balance or insufficient credit.',
+            3 => 'Invalid API code.',
+            4 => 'Maximum number of characters exceeded.',
+            5 => 'SMS is blocked due to spam content.',
+            6 => 'Invalid sender name.',
+            7 => 'Invalid mobile number format.',
+            8 => 'Unauthorized request or API not allowed.',
+            9 => 'API deactivated.',
         ];
 
-        $response = $this->itexmo->broadcast2d($messages);
-        $this->assertEquals([
-            'success'=> true,
-            'message'=> 'Message sent successfully',
-            'data'=> ['status'=> 0]
-        ], $response);
-    }
-
-
-    public function testBroadcastOtpSuccessful(){
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status'=>0]))
+        foreach ($errorCodes as $code) {
+            $mock = new MockHandler([
+                new Response(200, [], json_encode(['status' => $code]))
             ]);
 
+            $handlerStack = HandlerStack::create($mock);
+            $client = new Client(['handler' => $handlerStack]);
+
+            $this->itexmo->setClient($client);
+
+            $response = call_user_func_array([$this->itexmo, $method], $args);
+            $this->assertEquals([
+                'success' => false,
+                'message' => $errorMessages[$code],
+                'data' => ['status' => $code]
+            ], $response);
+        }
+    }
+
+    /**
+     * @dataProvider endpointProvider
+     */
+    public function testUnauthorizedRequest($method, $args)
+    {
+        $mock = new MockHandler([
+            new Response(401, [])
+        ]);
+
         $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler'=> $handlerStack]);
+        $client = new Client(['handler' => $handlerStack]);
+
         $this->itexmo->setClient($client);
 
-        $response = $this->itexmo->broadcastOtp('12345678909', 'Your OTP is 123456');
+        $response = call_user_func_array([$this->itexmo, $method], $args);
         $this->assertEquals([
-            'success'=> true,
-            'message'=> 'Message sent successfully',
-            'data'=> ['status'=> 0]
+            'success' => false,
+            'message' => 'Unauthorized request. Check your API Key.',
+            'data' => null
         ], $response);
     }
 
-    public function testInsufficientCreditError()
+    /**
+     * @dataProvider endpointProvider
+     */
+    public function testInvalidApiResponse($method, $args)
     {
-        // mock response with status 2 (insufficient credit)
         $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 2]))
+            new Response(200, [], json_encode(['invalid' => 'response']))
         ]);
 
         $handlerStack = HandlerStack::create($mock);
@@ -114,125 +119,19 @@ class ItexmoSmsTest extends TestCase
 
         $this->itexmo->setClient($client);
 
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('ERROR: No balance or insufficient credit.', $response);
+        $response = call_user_func_array([$this->itexmo, $method], $args);
+        $this->assertEquals([
+            'success' => false,
+            'message' => 'Invalid API response',
+            'data' => ['invalid' => 'response']
+        ], $response);
     }
 
-    public function testInvalidApiCodeError()
+    /**
+     * @dataProvider endpointProvider
+     */
+    public function testUnrecognizedStatusCode($method, $args)
     {
-        // mock response with status 3 (invalid API code)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 3]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('ERROR: Invalid API code.', $response);
-    }
-
-    public function testMaximumCharactersExceededError()
-    {
-        // mock response with status 4 (maximum characters exceeded)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 4]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message exceeds character limit');
-        $this->assertEquals('ERROR: Maximum number of characters exceeded.', $response);
-    }
-
-    public function testSmsBlockedDueToSpamError()
-    {
-        // mock response with status 5 (SMS blocked due to spam content)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 5]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['1234567890'], 'Spam message');
-        $this->assertEquals('ERROR: SMS is blocked due to spam content.', $response);
-    }
-
-    public function testInvalidSenderNameError()
-    {
-        // mock response with status 6 (invalid sender name)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 6]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('ERROR: Invalid sender name.', $response);
-    }
-
-    public function testInvalidMobileNumberFormatError()
-    {
-        // mockresponse with status 7 (invalid mobile number format)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 7]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['123'], 'Test message');
-        $this->assertEquals('ERROR: Invalid mobile number format.', $response);
-    }
-
-    public function testUnauthorizedRequestError()
-    {
-        // mock response with status 8 (unauthorized request)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 8]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('ERROR: Unauthorized request or API not allowed.', $response);
-    }
-
-    public function testApiDeactivatedError()
-    {
-        // mockresponse with status 9 (API deactivated)
-        $mock = new MockHandler([
-            new Response(200, [], json_encode(['status' => 9]))
-        ]);
-
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-
-        $this->itexmo->setClient($client);
-
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('ERROR: API deactivated.', $response);
-    }
-
-    public function testUnhandledApiResponse()
-    {
-        // mock response with unknown status
         $mock = new MockHandler([
             new Response(200, [], json_encode(['status' => 999]))
         ]);
@@ -242,8 +141,21 @@ class ItexmoSmsTest extends TestCase
 
         $this->itexmo->setClient($client);
 
-        $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('ERROR: Unrecognized status code.', $response);
+        $response = call_user_func_array([$this->itexmo, $method], $args);
+        $this->assertEquals([
+            'success' => false,
+            'message' => 'Unrecognized status code.',
+            'data' => ['status' => 999]
+        ], $response);
+    }
+
+    public function endpointProvider()
+    {
+        return [
+            'broadcast' => ['broadcast', [['1234567890'], 'Test message']],
+            'broadcast2d' => ['broadcast2d', [[['1234567890', 'Test message']]]],
+            'broadcastOTP' => ['broadcastOTP', ['1234567890', 'Your OTP is 123456']],
+            'query' => ['query', ['balance']],
+        ];
     }
 }
-
