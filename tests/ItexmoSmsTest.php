@@ -32,7 +32,11 @@ class ItexmoSmsTest extends TestCase
         $this->itexmo->setClient($client);
 
         $response = $this->itexmo->broadcast(['1234567890'], 'Test message');
-        $this->assertEquals('SUCCESS: Message sent successfully.', $response);
+        $this->assertEquals([
+            'success'=> true,
+            'message'=> 'Message sent successfully',
+            'data'=> ['status'=>0],
+        ], $response);
     }
 
     public function testInvalidNumberError()
@@ -48,8 +52,15 @@ class ItexmoSmsTest extends TestCase
         $this->itexmo->setClient($client);
 
         $response = $this->itexmo->broadcast(['invalid_number'], 'Test message');
-        $this->assertEquals('ERROR: Invalid Number.', $response);
+        $this->assertEquals([
+            'success'=> false,
+            'message'=> 'Invalid Number',
+            'data'=> ['status'=> 1],
+        ], $response);
     }
+
+
+    
 
     public function testInsufficientCreditError()
     {
