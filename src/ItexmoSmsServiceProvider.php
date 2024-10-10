@@ -2,9 +2,10 @@
 
 namespace Agnes\ItexmoSms;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class ItexmoSmsServiceProvider extends ServiceProvider
+class ItexmoSmsServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function register()
     {
