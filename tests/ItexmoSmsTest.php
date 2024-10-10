@@ -35,7 +35,6 @@ class ItexmoSmsTest extends TestCase
 
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-
         $this->itexmo->setClient($client);
 
         $response = call_user_func_array([$this->itexmo, $method], $args);
@@ -71,7 +70,6 @@ class ItexmoSmsTest extends TestCase
 
             $handlerStack = HandlerStack::create($mock);
             $client = new Client(['handler' => $handlerStack]);
-
             $this->itexmo->setClient($client);
 
             $response = call_user_func_array([$this->itexmo, $method], $args);
@@ -94,7 +92,6 @@ class ItexmoSmsTest extends TestCase
 
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-
         $this->itexmo->setClient($client);
 
         $response = call_user_func_array([$this->itexmo, $method], $args);
@@ -116,7 +113,6 @@ class ItexmoSmsTest extends TestCase
 
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-
         $this->itexmo->setClient($client);
 
         $response = call_user_func_array([$this->itexmo, $method], $args);
@@ -138,7 +134,6 @@ class ItexmoSmsTest extends TestCase
 
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-
         $this->itexmo->setClient($client);
 
         $response = call_user_func_array([$this->itexmo, $method], $args);
@@ -147,6 +142,24 @@ class ItexmoSmsTest extends TestCase
             'message' => 'Unrecognized status code.',
             'data' => ['status' => 999]
         ], $response);
+    }
+
+    public function testMessageLengthValidation()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->itexmo->broadcast('1234567890', str_repeat('A', 161)); 
+    }
+
+    public function testMessageLengthValidationForBroadcast2d()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->itexmo->broadcast2d([[ '1234567890', str_repeat('A', 161) ]]); 
+    }
+
+    public function testMessageLengthValidationForBroadcastOTP()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->itexmo->broadcastOTP('1234567890', str_repeat('A', 161)); 
     }
 
     public function endpointProvider()
@@ -159,12 +172,9 @@ class ItexmoSmsTest extends TestCase
         ];
     }
 
-
-
     /**
      * @dataProvider multipleRecipientsProvider
      */
-
     public function testMultipleRecipients($method, $args)
     {
         $mock = new MockHandler([
@@ -173,7 +183,6 @@ class ItexmoSmsTest extends TestCase
 
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
-
         $this->itexmo->setClient($client);
 
         $response = call_user_func_array([$this->itexmo, $method], $args);
@@ -184,22 +193,13 @@ class ItexmoSmsTest extends TestCase
         ], $response);
     }
 
-
-
-    /**
-     * Data provider for multiple recipients test.
-     * @return array[]
-     */
     public function multipleRecipientsProvider()
     {
         return [
-            // broadcast: sending the same message to multiple recipients
             'broadcast' => [
                 'broadcast', 
                 [['1234567890', '0987654321'], 'Test message to multiple recipients']
             ],
-
-            // broadcast 2D: sending different messages to multiple recipients
             'broadcast2d' => [
                 'broadcast2d', 
                 [[
@@ -207,8 +207,6 @@ class ItexmoSmsTest extends TestCase
                     ['0987654321', 'Test message 2']
                 ]]
             ],
-
         ];
     }
-
 }
