@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'a89b264b606d098d5e2a9fdd5bc410105206573d',
+        'reference' => '10750f5ba0acfb88c0c5eef99233f6c9799f6676',
         'name' => 'agnes/itexmo-sms',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'a89b264b606d098d5e2a9fdd5bc410105206573d',
+            'reference' => '10750f5ba0acfb88c0c5eef99233f6c9799f6676',
             'dev_requirement' => false,
         ),
         'carbonphp/carbon-doctrine-types' => array(
