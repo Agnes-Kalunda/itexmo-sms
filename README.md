@@ -53,7 +53,7 @@ return [
 
 ```
 
-Make sure to add your Itexmo API key to your `.env` file:
+Make sure to add your configuration variables to your `.env` file:
 
 ```
 ITEXMO_API_KEY=your_api_key_here
