@@ -24,19 +24,19 @@ class ItexmoSms
             throw new \InvalidArgumentException("API code, email, and password are required.");
         }
 
-        // required
+        // Mandatory fields
         $this->api_code = $config['api_code'];
         $this->email = $config['email'];
         $this->password = $config['password'];
 
-        
+        // Optional fields with defaults
         $this->base_url = $config['api_base_url'] ?? 'https://api.itexmo.com/api/';
         $this->default_sender_id = $config['default_sender_id'] ?? '';
         $this->maxMessageLength = $config['max_message_length'] ?? 160;
         $this->retry_attempts = $config['retry_attempts'] ?? 3;
         $this->retry_delay = $config['retry_delay'] ?? 5;
 
-        
+    
         $this->client = new Client(['base_uri' => $this->base_url]);
     }
 
