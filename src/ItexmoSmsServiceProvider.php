@@ -2,8 +2,8 @@
 
 namespace Itexmo\ItexmoSms;
 
-use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Support\DeferrableProvider;
 
 class ItexmoSmsServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -27,7 +27,8 @@ class ItexmoSmsServiceProvider extends ServiceProvider implements DeferrableProv
         }
     }
 
-    public function provides(){
+    public function provides()
+    {
         return [ItexmoSms::class];
     }
 }

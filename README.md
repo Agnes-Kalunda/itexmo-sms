@@ -40,6 +40,7 @@ After publishing the configuration file, you can find it at `config/itexmo.php`.
 ```php
 return [
     'api_key' => env('ITEXMO_API_KEY', ''),
+    
     // Other configuration options...
 ];
 ```
