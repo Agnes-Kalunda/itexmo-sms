@@ -40,9 +40,16 @@ After publishing the configuration file, you can find it at `config/itexmo.php`.
 ```php
 return [
     'api_key' => env('ITEXMO_API_KEY', ''),
-    
-    // Other configuration options...
+    'email' => env('ITEXMO_EMAIL', ''),
+    'password' => env('ITEXMO_PASSWORD', ''),
+    'api_code' => env('ITEXMO_API_CODE', ''),
+    'sender_id' => env('ITEXMO_SENDER_ID', ''),
+    'base_url' => env('ITEXMO_BASE_URL', 'https://api.itexmo.com/api/'),
+    'max_message_length' => env('ITEXMO_MAX_MESSAGE_LENGTH', 160),
+    'retry_attempts' => env('ITEXMO_RETRY_ATTEMPTS', 3),
+    'retry_delay' => env('ITEXMO_RETRY_DELAY', 1000), // in milliseconds
 ];
+
 ```
 
 Make sure to add your Itexmo API key to your `.env` file:
