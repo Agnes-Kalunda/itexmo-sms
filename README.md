@@ -56,7 +56,10 @@ return [
 Make sure to add your configuration variables to your `.env` file:
 
 ```
-ITEXMO_API_KEY=your_api_key_here
+ITEXMO_API_CODE=your_api_code_here
+ITEXMO_EMAIL=your_itexmo_email@example.com
+ITEXMO_PASSWORD=your_itexmo_password
+ITEXMO_DEFAULT_SENDER_ID=ITEXMO SMS
 ```
 
 ## Usage
