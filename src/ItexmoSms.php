@@ -8,6 +8,8 @@ use GuzzleHttp\Exception\RequestException;
 class ItexmoSms
 {
     protected $api_code;
+    protected $email;
+    protected $password;
     protected $client;
     protected $base_url;
     protected $default_sender_id;
@@ -17,13 +19,24 @@ class ItexmoSms
 
     public function __construct(array $config)
     {
-        $this->api_code = $config['api_code'] ?? '';
+        
+        if (empty($config['api_code']) || empty($config['email']) || empty($config['password'])) {
+            throw new \InvalidArgumentException("API code, email, and password are required.");
+        }
+
+        // required
+        $this->api_code = $config['api_code'];
+        $this->email = $config['email'];
+        $this->password = $config['password'];
+
+        
         $this->base_url = $config['api_base_url'] ?? 'https://api.itexmo.com/api/';
         $this->default_sender_id = $config['default_sender_id'] ?? '';
         $this->maxMessageLength = $config['max_message_length'] ?? 160;
         $this->retry_attempts = $config['retry_attempts'] ?? 3;
         $this->retry_delay = $config['retry_delay'] ?? 5;
 
+        
         $this->client = new Client(['base_uri' => $this->base_url]);
     }
 
@@ -39,6 +52,8 @@ class ItexmoSms
 
         $data = [
             'api_code' => $this->api_code,
+            'email' => $this->email,
+            'password' => $this->password,
             'recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
             'message' => $message,
             'sender_id' => $sender_id,
@@ -57,11 +72,13 @@ class ItexmoSms
 
         $data = [
             'api_code' => $this->api_code,
+            'email' => $this->email,
+            'password' => $this->password,
             'messages' => json_encode($messages),
             'sender_id' => $sender_id,
         ];
 
-        return $this->sendRequest('broadcast-d2', $data);
+        return $this->sendRequest('broadcast-2d', $data);
     }
 
     public function broadcastOTP(string $recipient, string $message): array
@@ -70,6 +87,8 @@ class ItexmoSms
 
         $data = [
             'api_code' => $this->api_code,
+            'email' => $this->email,
+            'password' => $this->password,
             'recipient' => $recipient,
             'message' => $message,
         ];
@@ -80,14 +99,17 @@ class ItexmoSms
     public function query(string $query_type, array $params = []): array
     {
         $data = array_merge([
-            'api_code'=> $this->api_code,
-            'query_type'=> $query_type,
+            'api_code' => $this->api_code,
+            'email' => $this->email,
+            'password' => $this->password,
+            'query_type' => $query_type,
         ], $params);
 
         return $this->sendRequest('query', $data);
     }
 
-    private function sendRequest(string $endpoint, array $data): array {
+    private function sendRequest(string $endpoint, array $data): array
+    {
         try {
             $response = $this->client->post($endpoint, ['form_params' => $data]);
             $body = json_decode($response->getBody(), true);
@@ -96,7 +118,7 @@ class ItexmoSms
                 return [
                     'success' => $body['status'] === 0,
                     'message' => $this->handleApiResponse($body['status']),
-                    'data' => $body
+                    'data' => $body,
                 ];
             }
 
@@ -112,18 +134,20 @@ class ItexmoSms
                 'message' => $e->hasResponse() && $e->getResponse()->getStatusCode() === 401
                     ? 'Unauthorized request. Check your API Key.'
                     : 'HTTP request error: ' . $e->getMessage(),
-                "data" => null,
+                'data' => null,
             ];
         }
     }
 
-    private function validateMessageLength(string $message): void {
+    private function validateMessageLength(string $message): void
+    {
         if (strlen($message) > $this->maxMessageLength) {
             throw new \InvalidArgumentException("Message exceeds maximum length of {$this->maxMessageLength} characters.");
         }
     }
 
-    private function handleApiResponse(int $status): string {
+    private function handleApiResponse(int $status): string
+    {
         $responses = [
             0 => 'Message sent successfully.',
             1 => 'Invalid Number.',
