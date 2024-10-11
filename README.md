@@ -114,6 +114,16 @@ The tests cover:
 - Configuration loading
 - API response parsing
 
+To specifically run Integral tests, run the command below
+```bash
+ ./vendor/bin/phpunit --filter ItexmoSmsIntegrationTest
+ ```
+
+To specifically run the mock tests, run the command below
+ ```bash
+ vendor/bin/phpunit --filter ItexmoSmsTest
+ ```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
