@@ -24,7 +24,7 @@ This package provides an easy-to-use integration of the Itexmo SMS Gateway into 
 You can install this package via Composer. Run the following command in your terminal:
 
 ```bash
-composer require agnes/itexmo-sms
+composer require itexmo/itexmo-sms
 ```
 
 After installation, publish the configuration file:
@@ -55,7 +55,7 @@ ITEXMO_API_KEY=your_api_key_here
 To send an SMS using this package:
 
 ```php
-use Agnes\ItexmoSms\ItexmoSms;
+use Itexmo\ItexmoSms\ItexmoSms;
 
 // ...
 
