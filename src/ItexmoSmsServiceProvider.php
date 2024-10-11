@@ -1,6 +1,6 @@
 <?php
 
-namespace Agnes\ItexmoSms;
+namespace Itexmo\ItexmoSms;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Agnes\ItexmoSms;
+namespace Itexmo\ItexmoSms;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;

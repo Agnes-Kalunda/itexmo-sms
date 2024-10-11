@@ -12,7 +12,7 @@ $config = [
     'password' => getenv('ITEXMO_PASSWORD'), // Add this line
 ];
 
-$itexmo = new Agnes\ItexmoSms\ItexmoSms($config);
+$itexmo = new Itexmo\ItexmoSms\ItexmoSms($config);
 
 // Sending an SMS
 $response = $itexmo->broadcast('recipient-phone-number', 'Test message via Itexmo.');
