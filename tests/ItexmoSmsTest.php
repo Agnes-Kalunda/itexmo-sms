@@ -15,12 +15,21 @@ class ItexmoSmsTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->itexmo = new ItexmoSms(['api_code' => 'test_api_code']);
+        // Providing mandatory email and password fields along with api_code
+        $this->itexmo = new ItexmoSms([
+            'api_code' => 'test_api_code', 
+            'email' => 'test@example.com', 
+            'password' => 'test_password'
+        ]);
     }
 
     public function testConstructorWithCustomConfig()
     {
-        $customItexmo = new ItexmoSms(['api_code' => 'custom_api_code']);
+        $customItexmo = new ItexmoSms([
+            'api_code' => 'custom_api_code', 
+            'email' => 'custom@example.com', 
+            'password' => 'custom_password'
+        ]);
         $this->assertInstanceOf(ItexmoSms::class, $customItexmo);
     }
 
