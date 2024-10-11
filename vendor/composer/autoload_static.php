@@ -98,6 +98,8 @@ class ComposerStaticInit7a278c54b0f1ca01e9e4c82a7c660c79
         ),
         'I' => 
         array (
+            'Itexmo\\ItexmoSms\\Tests\\' => 23,
+            'Itexmo\\ItexmoSms\\' => 17,
             'Illuminate\\' => 11,
         ),
         'G' => 
@@ -128,11 +130,6 @@ class ComposerStaticInit7a278c54b0f1ca01e9e4c82a7c660c79
             'Cron\\' => 5,
             'Carbon\\Doctrine\\' => 16,
             'Carbon\\' => 7,
-        ),
-        'A' => 
-        array (
-            'Agnes\\ItexmoSms\\Tests\\' => 22,
-            'Agnes\\ItexmoSms\\' => 16,
         ),
     );
 
@@ -299,6 +296,14 @@ class ComposerStaticInit7a278c54b0f1ca01e9e4c82a7c660c79
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
         ),
+        'Itexmo\\ItexmoSms\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
+        'Itexmo\\ItexmoSms\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
         'Illuminate\\' => 
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate',
@@ -358,14 +363,6 @@ class ComposerStaticInit7a278c54b0f1ca01e9e4c82a7c660c79
         'Carbon\\' => 
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
-        ),
-        'Agnes\\ItexmoSms\\Tests\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/tests',
-        ),
-        'Agnes\\ItexmoSms\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 

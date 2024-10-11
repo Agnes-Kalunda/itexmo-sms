@@ -1,8 +1,8 @@
 <?php
 
-namespace Agnes\ItexmoSms\Tests;
+namespace Itexmo\ItexmoSms\Tests;
 
-use Agnes\ItexmoSms\ItexmoSms;
+use Itexmo\ItexmoSms\ItexmoSms;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Handler\MockHandler;
