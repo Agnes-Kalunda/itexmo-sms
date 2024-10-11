@@ -2,7 +2,7 @@
 
 require 'vendor/autoload.php';
 
-use Agnes\ItexmoSms\ItexmoSms;
+use Itexmo\ItexmoSms\ItexmoSms;
 use Illuminate\Container\Container;
 
 // Create a new container instance
