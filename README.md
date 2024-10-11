@@ -102,11 +102,6 @@ if (!$result->isSuccess()) {
 
 ## Testing
 
-This package comes with a set of PHPUnit tests. To run the tests, use:
-
-```bash
-vendor/bin/phpunit
-```
 
 The tests cover:
 - Successful SMS sending
