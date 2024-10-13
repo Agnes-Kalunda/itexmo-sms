@@ -12,85 +12,67 @@ class ItexmoSms
     protected $password;
     protected $client;
     protected $base_url;
-    protected $default_sender_id;
-    protected $maxMessageLength;
     protected $retry_attempts;
     protected $retry_delay;
 
     public function __construct(array $config)
     {
-        
-        if (empty($config['api_code']) || empty($config['email']) || empty($config['password'])) {
+        $this->api_code = $config['api_code'] ?? null;
+        $this->email = $config['email'] ?? null;
+        $this->password = $config['password'] ?? null;
+
+        if (empty($this->api_code) || empty($this->email) || empty($this->password)) {
             throw new \InvalidArgumentException("API code, email, and password are required.");
         }
 
-        // Mandatory fields
-        $this->api_code = $config['api_code'];
-        $this->email = $config['email'];
-        $this->password = $config['password'];
-
-        // Optional fields with defaults
         $this->base_url = $config['api_base_url'] ?? 'https://api.itexmo.com/api/';
-        $this->default_sender_id = $config['default_sender_id'] ?? '';
-        $this->maxMessageLength = $config['max_message_length'] ?? 160;
         $this->retry_attempts = $config['retry_attempts'] ?? 3;
         $this->retry_delay = $config['retry_delay'] ?? 5;
 
-    
         $this->client = new Client(['base_uri' => $this->base_url]);
-    }
-
-    public function setClient(Client $client)
-    {
-        $this->client = $client;
     }
 
     public function broadcast($recipients, string $message, ?string $sender_id = null): array
     {
-        $this->validateMessageLength($message);
-        $sender_id = $sender_id ?? $this->default_sender_id;
-
         $data = [
-            'api_code' => $this->api_code,
             'email' => $this->email,
             'password' => $this->password,
-            'recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
-            'message' => $message,
-            'sender_id' => $sender_id,
+            'ApiCode' => $this->api_code,
+            'Recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
+            'Message' => $message,
         ];
+
+        if ($sender_id) {
+            $data['SenderId'] = $sender_id;
+        }
 
         return $this->sendRequest('broadcast', $data);
     }
 
     public function broadcast2d(array $messages, ?string $sender_id = null): array
     {
-        foreach ($messages as $msg) {
-            $this->validateMessageLength($msg[1]);
-        }
-
-        $sender_id = $sender_id ?? $this->default_sender_id;
-
         $data = [
-            'api_code' => $this->api_code,
             'email' => $this->email,
             'password' => $this->password,
-            'messages' => json_encode($messages),
-            'sender_id' => $sender_id,
+            'ApiCode' => $this->api_code,
+            'Messages' => json_encode($messages),
         ];
+
+        if ($sender_id) {
+            $data['SenderId'] = $sender_id;
+        }
 
         return $this->sendRequest('broadcast-2d', $data);
     }
 
     public function broadcastOTP(string $recipient, string $message): array
     {
-        $this->validateMessageLength($message);
-
         $data = [
-            'api_code' => $this->api_code,
             'email' => $this->email,
             'password' => $this->password,
-            'recipient' => $recipient,
-            'message' => $message,
+            'ApiCode' => $this->api_code,
+            'Recipients' => $recipient,
+            'Message' => $message,
         ];
 
         return $this->sendRequest('broadcast-otp', $data);
@@ -99,10 +81,10 @@ class ItexmoSms
     public function query(string $query_type, array $params = []): array
     {
         $data = array_merge([
-            'api_code' => $this->api_code,
             'email' => $this->email,
             'password' => $this->password,
-            'query_type' => $query_type,
+            'ApiCode' => $this->api_code,
+            'QueryType' => $query_type,
         ], $params);
 
         return $this->sendRequest('query', $data);
@@ -110,57 +92,47 @@ class ItexmoSms
 
     private function sendRequest(string $endpoint, array $data): array
     {
-        try {
-            $response = $this->client->post($endpoint, ['form_params' => $data]);
-            $body = json_decode($response->getBody(), true);
+        $attempt = 0;
+        do {
+            try {
+                error_log("Sending request to Itexmo API: " . json_encode($data));
+                
+                $response = $this->client->post($endpoint, [
+                    'form_params' => $data,
+                    'headers' => [
+                        'Content-Type' => 'application/x-www-form-urlencoded',
+                    ],
+                ]);
+                
+                $body = json_decode($response->getBody(), true);
+                error_log("Itexmo API Response: " . json_encode($body));
 
-            if (isset($body['status'])) {
                 return [
-                    'success' => $body['status'] === 0,
-                    'message' => $this->handleApiResponse($body['status']),
+                    'success' => !($body['Error'] ?? true),
+                    'message' => $body['Message'] ?? 'Unknown response',
                     'data' => $body,
                 ];
+            } catch (RequestException $e) {
+                $attempt++;
+                $errorMessage = 'HTTP request error: ' . $e->getMessage();
+                
+                if ($e->hasResponse()) {
+                    $responseBody = json_decode($e->getResponse()->getBody(), true);
+                    $errorMessage .= ' - ' . ($responseBody['Message'] ?? 'Unknown error');
+                }
+
+                error_log("Itexmo API Error: " . $errorMessage);
+
+                if ($attempt >= $this->retry_attempts) {
+                    return [
+                        'success' => false,
+                        'message' => $errorMessage,
+                        'data' => null,
+                    ];
+                }
+
+                sleep($this->retry_delay);
             }
-
-            return [
-                'success' => false,
-                'message' => 'Invalid API response',
-                'data' => $body,
-            ];
-
-        } catch (RequestException $e) {
-            return [
-                'success' => false,
-                'message' => $e->hasResponse() && $e->getResponse()->getStatusCode() === 401
-                    ? 'Unauthorized request. Check your API Key.'
-                    : 'HTTP request error: ' . $e->getMessage(),
-                'data' => null,
-            ];
-        }
-    }
-
-    private function validateMessageLength(string $message): void
-    {
-        if (strlen($message) > $this->maxMessageLength) {
-            throw new \InvalidArgumentException("Message exceeds maximum length of {$this->maxMessageLength} characters.");
-        }
-    }
-
-    private function handleApiResponse(int $status): string
-    {
-        $responses = [
-            0 => 'Message sent successfully.',
-            1 => 'Invalid Number.',
-            2 => 'No balance or insufficient credit.',
-            3 => 'Invalid API code.',
-            4 => 'Maximum number of characters exceeded.',
-            5 => 'SMS is blocked due to spam content.',
-            6 => 'Invalid sender name.',
-            7 => 'Invalid mobile number format.',
-            8 => 'Unauthorized request or API not allowed.',
-            9 => 'API deactivated.',
-        ];
-
-        return $responses[$status] ?? 'Unrecognized status code.';
+        } while ($attempt < $this->retry_attempts);
     }
 }

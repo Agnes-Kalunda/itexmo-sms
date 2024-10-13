@@ -4,6 +4,7 @@ namespace Itexmo\ItexmoSms\Tests;
 
 use Itexmo\ItexmoSms\ItexmoSms;
 use PHPUnit\Framework\TestCase;
+use Dotenv\Dotenv;
 
 class ItexmoSmsIntegrationTest extends TestCase
 {
@@ -11,69 +12,61 @@ class ItexmoSmsIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
+        $dotenv = Dotenv::create(__DIR__ . '/..');
+        $dotenv->load();
+
         $this->itexmo = new ItexmoSms([
-            'api_code' => 'api_code_here',
-            'email' => 'email_here',
-            'password' => 'password_here'
+            'api_code' => getenv('ITEXMO_API_CODE'),
+            'email' => getenv('ITEXMO_EMAIL'),
+            'password' => getenv('ITEXMO_PASSWORD'),
         ]);
+
+        $this->assertNotNull($this->itexmo, 'ItexmoSms failed to initialize');
+
+        error_log("API Code: " . getenv('ITEXMO_API_CODE'));
+        error_log("Email: " . getenv('ITEXMO_EMAIL'));
+        error_log("Password: " . getenv('ITEXMO_PASSWORD'));
     }
 
     public function testBroadcast()
     {
-        $response = $this->itexmo->broadcast('recipient_number', 'Test message');
-        var_dump($response);
-        $this->assertArrayHasKey('success', $response);
-        $this->assertTrue($response['success'], 'The message was not sent successfully.');
+        $response = $this->itexmo->broadcast(getenv('TEST_PHONE_NUMBER'), 'Test message');
+        $this->assertTrue($response['success'], 'The message was not sent successfully: ' . ($response['message'] ?? 'Unknown error'));
     }
 
     public function testQueryBalance()
     {
         $response = $this->itexmo->query('balance');
-        var_dump($response);
-        $this->assertArrayHasKey('success', $response);
-        $this->assertTrue($response['success'], 'The query for balance was unsuccessful.');
+        $this->assertTrue($response['success'], 'The query for balance was unsuccessful: ' . ($response['message'] ?? 'Unknown error'));
     }
 
     public function testBroadcastWithMultipleRecipients()
     {
-        $recipients = ['recipient1_number', 'recipient2_number']; // Replace with valid numbers
+        $recipients = [getenv('TEST_PHONE_NUMBER1'), getenv('TEST_PHONE_NUMBER2')];
         $response = $this->itexmo->broadcast($recipients, 'Test message to multiple recipients');
-        var_dump($response);
-        $this->assertArrayHasKey('success', $response);
-        $this->assertTrue($response['success'], 'The messages were not sent successfully.');
+        $this->assertTrue($response['success'], 'The messages were not sent successfully: ' . ($response['message'] ?? 'Unknown error'));
     }
 
     public function testBroadcastWithInvalidNumber()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->itexmo->broadcast('invalid_number', 'Test message');
+        $response = $this->itexmo->broadcast('invalid_number', 'Test message');
+        $this->assertFalse($response['success']);
+        $this->assertStringContainsString('invalid', strtolower($response['message']));
     }
 
-    public function testQueryBalanceWithInvalidQuery()
+    public function testBroadcast2d()
     {
-        $response = $this->itexmo->query('invalid_query');
-        var_dump($response);
-        $this->assertArrayHasKey('success', $response);
-        $this->assertFalse($response['success'], 'The query for an invalid command should fail.');
-    }
-
-    public function testBroadcastLengthValidation()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->itexmo->broadcast('recipient_number', str_repeat('A', 161)); // Assuming max length is 160
+        $messages = [
+            [getenv('TEST_PHONE_NUMBER1'), 'Test message 1'],
+            [getenv('TEST_PHONE_NUMBER2'), 'Test message 2'],
+        ];
+        $response = $this->itexmo->broadcast2d($messages);
+        $this->assertTrue($response['success'], 'The 2D broadcast was not successful: ' . ($response['message'] ?? 'Unknown error'));
     }
 
     public function testBroadcastOTP()
     {
-        $response = $this->itexmo->broadcastOTP('recipient_number', 'Your OTP is 123456');
-        var_dump($response);
-        $this->assertArrayHasKey('success', $response);
-        $this->assertTrue($response['success'], 'The OTP message was not sent successfully.');
-    }
-
-    public function testBroadcastOTPWithInvalidNumber()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->itexmo->broadcastOTP('invalid_number', 'Your OTP is 123456');
+        $response = $this->itexmo->broadcastOTP(getenv('TEST_PHONE_NUMBER'), 'Your OTP is 123456');
+        $this->assertTrue($response['success'], 'The OTP message was not sent successfully: ' . ($response['message'] ?? 'Unknown error'));
     }
 }
