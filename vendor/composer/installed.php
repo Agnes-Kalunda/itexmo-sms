@@ -5,20 +5,11 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '10750f5ba0acfb88c0c5eef99233f6c9799f6676',
-        'name' => 'agnes/itexmo-sms',
+        'reference' => 'f6afb704942657809db84fc2d78247fb2d8e061d',
+        'name' => 'itexmo/itexmo-sms',
         'dev' => true,
     ),
     'versions' => array(
-        'agnes/itexmo-sms' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../../',
-            'aliases' => array(),
-            'reference' => '10750f5ba0acfb88c0c5eef99233f6c9799f6676',
-            'dev_requirement' => false,
-        ),
         'carbonphp/carbon-doctrine-types' => array(
             'pretty_version' => '1.0.0',
             'version' => '1.0.0.0',
@@ -306,6 +297,15 @@
             'replaced' => array(
                 0 => 'v5.8.38',
             ),
+        ),
+        'itexmo/itexmo-sms' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'reference' => 'f6afb704942657809db84fc2d78247fb2d8e061d',
+            'dev_requirement' => false,
         ),
         'kodova/hamcrest-php' => array(
             'dev_requirement' => true,
