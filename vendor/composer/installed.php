@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'f6afb704942657809db84fc2d78247fb2d8e061d',
+        'reference' => 'fde4ca6af3edce9bd5e6e03f49018b4f9cbf3f59',
         'name' => 'itexmo/itexmo-sms',
         'dev' => true,
     ),
@@ -304,7 +304,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'f6afb704942657809db84fc2d78247fb2d8e061d',
+            'reference' => 'fde4ca6af3edce9bd5e6e03f49018b4f9cbf3f59',
             'dev_requirement' => false,
         ),
         'kodova/hamcrest-php' => array(

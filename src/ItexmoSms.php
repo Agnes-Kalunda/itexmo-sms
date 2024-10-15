@@ -32,62 +32,53 @@ class ItexmoSms
         $this->client = new Client(['base_uri' => $this->base_url]);
     }
 
-    public function broadcast($recipients, string $message, ?string $sender_id = null): array
+    public function checkBalance(): array
     {
-        $data = [
-            'email' => $this->email,
-            'password' => $this->password,
+        return $this->sendRequest('query', [
+            'Email' => $this->email,
+            'Password' => $this->password,
             'ApiCode' => $this->api_code,
-            'Recipients' => is_array($recipients) ? json_encode($recipients) : $recipients,
+            'Action' => 'ApiCodeInfo'
+        ]);
+    }
+
+    public function broadcast(array $recipients, string $message): array
+    {
+        return $this->sendRequest('broadcast', [
+            'Email' => $this->email,
+            'Password' => $this->password,
+            'ApiCode' => $this->api_code,
+            'Recipients' => $recipients,
             'Message' => $message,
-        ];
-
-        if ($sender_id) {
-            $data['SenderId'] = $sender_id;
-        }
-
-        return $this->sendRequest('broadcast', $data);
+        ]);
     }
 
-    public function broadcast2d(array $messages, ?string $sender_id = null): array
+    public function broadcastOTP(array $recipients, string $message): array
     {
-        $data = [
-            'email' => $this->email,
-            'password' => $this->password,
+        return $this->sendRequest('broadcast-otp', [
+            'Email' => $this->email,
+            'Password' => $this->password,
             'ApiCode' => $this->api_code,
-            'Messages' => json_encode($messages),
-        ];
-
-        if ($sender_id) {
-            $data['SenderId'] = $sender_id;
-        }
-
-        return $this->sendRequest('broadcast-2d', $data);
-    }
-
-    public function broadcastOTP(string $recipient, string $message): array
-    {
-        $data = [
-            'email' => $this->email,
-            'password' => $this->password,
-            'ApiCode' => $this->api_code,
-            'Recipients' => $recipient,
+            'Recipients' => $recipients,
             'Message' => $message,
-        ];
-
-        return $this->sendRequest('broadcast-otp', $data);
+        ]);
     }
 
-    public function query(string $query_type, array $params = []): array
+    public function broadcast2d(array $messages): array
     {
-        $data = array_merge([
-            'email' => $this->email,
-            'password' => $this->password,
-            'ApiCode' => $this->api_code,
-            'QueryType' => $query_type,
-        ], $params);
+        $contents = array_map(function($message) {
+            return [
+                'Message' => $message[1],
+                'Recipient' => $message[0]
+            ];
+        }, $messages);
 
-        return $this->sendRequest('query', $data);
+        return $this->sendRequest('broadcast-2d', [
+            'Email' => $this->email,
+            'Password' => $this->password,
+            'ApiCode' => $this->api_code,
+            'Contents' => $contents,
+        ]);
     }
 
     private function sendRequest(string $endpoint, array $data): array
@@ -98,20 +89,27 @@ class ItexmoSms
                 error_log("Sending request to Itexmo API: " . json_encode($data));
                 
                 $response = $this->client->post($endpoint, [
-                    'form_params' => $data,
+                    'json' => $data,
                     'headers' => [
-                        'Content-Type' => 'application/x-www-form-urlencoded',
+                        'Content-Type' => 'application/json',
+                        'Accept' => 'application/json',
                     ],
                 ]);
                 
-                $body = json_decode($response->getBody(), true);
-                error_log("Itexmo API Response: " . json_encode($body));
+                $rawBody = (string) $response->getBody();
+                error_log("Raw API Response: " . $rawBody);
+                
+                $body = json_decode($rawBody, true);
+                error_log("Parsed API Response: " . json_encode($body));
 
-                return [
-                    'success' => !($body['Error'] ?? true),
+                $result = [
+                    'success' => !($body['Error'] ?? false),
                     'message' => $body['Message'] ?? 'Unknown response',
                     'data' => $body,
                 ];
+                error_log("Returning response: " . json_encode($result));
+
+                return $result;
             } catch (RequestException $e) {
                 $attempt++;
                 $errorMessage = 'HTTP request error: ' . $e->getMessage();
