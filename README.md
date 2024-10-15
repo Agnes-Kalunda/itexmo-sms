@@ -1,119 +1,234 @@
-# Itexmo SMS Gateway Integration for Laravel 5.8
+# Itexmo SMS Gateway for Laravel
 
-This package provides an easy-to-use integration of the Itexmo SMS Gateway into Laravel 5.8 applications. It simplifies the process of sending SMS messages via the Itexmo API, handling configuration, and managing responses.
+**Itexmo SMS Gateway Integration for Laravel** is a package that allows you to send SMS messages using the Itexmo API in your Laravel applications. It provides a simple and clean API for sending text messages, checking SMS credits, and broadcasting messages to multiple recipients.
 
 ## Table of Contents
 
-- [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
+  - [Sending SMS](#sending-sms)
+  - [Checking SMS Balance](#checking-sms-balance)
+  - [Broadcasting SMS with OTP](#broadcasting-sms-with-otp)
+  - [Sending Two-Dimensional Broadcast](#sending-two-dimensional-broadcast)
+- [Available Endpoints](#available-endpoints)
 - [Error Handling](#error-handling)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Requirements
-
-- PHP 7.1.3 or higher
-- Laravel 5.8
-- Composer
+- [Testing the Package](#testing-the-package)
 
 ## Installation
 
-You can install this package via Composer. Run the following command in your terminal:
+You can install the package via Composer:
 
 ```bash
 composer require itexmo/itexmo-sms
 ```
 
-After installation, publish the configuration file:
+After installation, the package will automatically register its service provider and facade.
+
+## Configuration
+
+To use the Itexmo package, you need to set up your Itexmo credentials in the Laravel environment configuration file (.env).
+
+Add the following lines to your `.env` file:
+
+```env
+# Mandatory settings
+ITEXMO_API_CODE=your_itexmo_api_code            # Replace with your Itexmo API code
+ITEXMO_EMAIL=your_itexmo_account_email          # Replace with your Itexmo account email
+ITEXMO_PASSWORD=your_itexmo_account_password    # Replace with your Itexmo account password
+
+# Optional settings (default values will be used if not set)
+ITEXMO_BASE_URL=https://api.itexmo.com/api/     # Base URL for the Itexmo API (default: https://api.itexmo.com/api/)
+ITEXMO_RETRY_ATTEMPTS=3                         # Number of retry attempts if API request fails (default: 3)
+ITEXMO_RETRY_DELAY=5                            # Delay between retry attempts in seconds (default: 5)
+```
+
+Next, publish the package configuration:
 
 ```bash
 php artisan vendor:publish --tag=itexmo-config
 ```
 
-## Configuration
-
-After publishing the configuration file, you can find it at `config/itexmo.php`. Edit this file to add your Itexmo configuration file variables:
-
-```php
-return [
-    // mandatory
-    'email' => env('ITEXMO_EMAIL', ''),
-    'password' => env('ITEXMO_PASSWORD', ''),
-    'api_code' => env('ITEXMO_API_CODE', ''),
-    // if not provided, default values will be used
-    'sender_id' => env('ITEXMO_SENDER_ID', ''),
-    'base_url' => env('ITEXMO_BASE_URL', 'https://api.itexmo.com/api/'),
-    'max_message_length' => env('ITEXMO_MAX_MESSAGE_LENGTH', 160),
-    'retry_attempts' => env('ITEXMO_RETRY_ATTEMPTS', 3),
-    'retry_delay' => env('ITEXMO_RETRY_DELAY', 1000), // in milliseconds
-];
-
-```
-
-Make sure to add your configuration variables to your `.env` file:
-
-```
-ITEXMO_API_CODE=your_api_code_here
-ITEXMO_EMAIL=your_itexmo_email@example.com
-ITEXMO_PASSWORD=your_itexmo_password
-ITEXMO_DEFAULT_SENDER_ID=ITEXMO SMS
-```
+This will create a configuration file `config/itexmo.php` where you can manage your Itexmo settings.
 
 ## Usage
 
-To send an SMS using this package:
+### Sending SMS
+
+To send an SMS message to a single or multiple recipients, use the `broadcast()` method provided by the `ItexmoSms` class.
+
+Example:
 
 ```php
 use Itexmo\ItexmoSms\ItexmoSms;
 
-// ...
+$itexmo = app(ItexmoSms::class);
+$recipients = ['number_1_here', 'number_2_here']; 
+$message = 'Hello from Itexmo!';
 
-public function sendMessage()
-{
-    $result = ItexmoSms::send('1234567890', 'Your message here');
+$response = $itexmo->broadcast($recipients, $message);
 
-    if ($result->isSuccess()) {
-        // SMS sent successfully
-    } else {
-        // Handle error
-        $errorMessage = $result->getErrorMessage();
-    }
+if ($response['success']) {
+    echo "SMS sent successfully!";
+} else {
+    echo "SMS sending failed: " . $response['message'];
 }
 ```
+
+### Checking SMS Balance
+
+You can check your current SMS balance using the `checkBalance()` method. This will return the remaining credits in your Itexmo account.
+
+Example:
+
+```php
+$itexmo = app(ItexmoSms::class);
+$response = $itexmo->checkBalance();
+
+if ($response['success']) {
+    echo "Your balance is: " . $response['data']['Balance'];
+} else {
+    echo "Failed to check balance: " . $response['message'];
+}
+```
+
+### Broadcasting SMS with OTP
+
+To send OTP (One-Time Password) to a single or multiple recipients, you can use the `broadcastOTP()` method.
+
+Example:
+
+```php
+$recipients = ['number_1_here', 'number_2_here'];
+$message = 'Your OTP is 123456.';
+
+$response = $itexmo->broadcastOTP($recipients, $message);
+
+if ($response['success']) {
+    echo "OTP sent successfully!";
+} else {
+    echo "Failed to send OTP: " . $response['message'];
+}
+```
+
+### Sending Two-Dimensional Broadcast
+
+To send multiple messages to different recipients, you can use the `broadcast2d()` method. This allows you to send different messages to different phone numbers.
+
+Example:
+
+```php
+$messages = [
+    ['number_1_here', 'Hello John!'],
+    ['number_2_here', 'Hello Jane!']
+];
+
+$response = $itexmo->broadcast2d($messages);
+
+if ($response['success']) {
+    echo "Messages sent successfully!";
+} else {
+    echo "Failed to send messages: " . $response['message'];
+}
+```
+
+## Available Endpoints
+
+1. **Broadcast SMS** (`broadcast`)
+   - Sends an SMS message to multiple recipients.
+   - Parameters:
+     - `recipients` (array): An array of phone numbers.
+     - `message` (string): The message to send.
+   - Example:
+     ```php
+     $itexmo->broadcast(['number_1_here', 'number_2_here'], 'Hello!');
+     ```
+
+2. **Check Balance** (`query`)
+   - Retrieves the current SMS balance for the account.
+   - Parameters: None
+   - Example:
+     ```php
+     $itexmo->checkBalance();
+     ```
+
+3. **Broadcast OTP** (`broadcast-otp`)
+   - Sends an OTP (One-Time Password) to multiple recipients.
+   - Parameters:
+     - `recipients` (array): An array of phone numbers.
+     - `message` (string): The OTP message to send.
+   - Example:
+     ```php
+     $itexmo->broadcastOTP(['number_1_here', 'number_2_here'], 'Your OTP is 123456');
+     ```
+
+4. **Two-Dimensional Broadcast** (`broadcast-2d`)
+   - Sends different messages to different recipients.
+   - Parameters:
+     - `messages` (array): A two-dimensional array where each element contains a recipient number and the message.
+   - Example:
+     ```php
+     $messages = [
+         ['number_1_here', 'Hello John!'],
+         ['number_2_here', 'Hello Jane!']
+     ];
+     $itexmo->broadcast2d($messages);
+     ```
 
 ## Error Handling
 
-The package handles various API responses and errors as per Itexmo's documentation. When sending an SMS, you can check for success and retrieve error messages:
+All responses from the Itexmo API are handled within the methods. The responses are returned as arrays with the following keys:
+
+- `success`: Indicates if the request was successful (true or false).
+- `message`: Contains a description of the result or error.
+- `data`: Contains the raw API response (if applicable).
+
+You can easily check if a request was successful by checking the `success` key.
+
+Example:
 
 ```php
-$result = ItexmoSms::send($phoneNumber, $message);
+$response = $itexmo->broadcast(['number_1_here'], 'Test message');
 
-if (!$result->isSuccess()) {
-    $errorCode = $result->getErrorCode();
-    $errorMessage = $result->getErrorMessage();
-    
-    // Log or handle the error as needed
-    Log::error("SMS sending failed. Error code: $errorCode, Message: $errorMessage");
+if ($response['success']) {
+    echo "SMS sent!";
+} else {
+    echo "Error: " . $response['message'];
 }
 ```
 
-## Testing
+## Testing the Package
 
+You can test the package using Postman or any other API testing tool. Simply set up an endpoint that triggers one of the available methods (e.g., `broadcast`, `checkBalance`) and call it via an HTTP request.
 
-The tests cover:
-- Successful SMS sending
-- Error handling for failed SMS sending
-- Configuration loading
-- API response parsing
+### Example API Route for SMS Broadcast
 
-To run Integral tests, run the command below
-```bash
- ./vendor/bin/phpunit --filter ItexmoSmsIntegrationTest
- ```
+```php
+use Illuminate\Http\Request;
+use Itexmo\ItexmoSms\ItexmoSms;
 
+Route::post('/send-sms', function (Request $request) {
+    $itexmo = app(ItexmoSms::class);
+    $recipients = $request->input('recipients'); // an array of phone numbers
+    $message = $request->input('message');
+
+    $response = $itexmo->broadcast($recipients, $message);
+
+    return response()->json($response);
+});
+```
+
+### Testing via Postman
+
+- URL: `http://your-app-url/send-sms`
+- Method: POST
+- Body: application/json
+```json
+{
+  "recipients": ["number_1_here", "number_2_here"],
+  "message": "Hello from Itexmo!"
+}
+```
 
 ## Contributing
 
